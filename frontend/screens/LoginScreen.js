@@ -8,7 +8,7 @@ import {
   Keyboard,
   Pressable,
 } from "react-native";
-import React from "react";
+import React, { useState } from "react";
 import { Dimensions } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 
@@ -16,6 +16,8 @@ var width = Dimensions.get("window").width; //full width
 var height = Dimensions.get("window").height; //full height
 
 const Login = () => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const navigation = useNavigation();
   return (
     <View
@@ -63,6 +65,8 @@ const Login = () => {
               <View>
                 <Text>Email</Text>
                 <TextInput
+                  value={email}
+                  onChangeText={(Text) => setEmail(Text)}
                   style={{
                     width: 300,
                     borderBottomColor: "#ccc",
@@ -75,6 +79,8 @@ const Login = () => {
               <View style={{ marginTop: 20 }}>
                 <Text>Password</Text>
                 <TextInput
+                  value={password}
+                  onChangeText={(Text) => setPassword(Text)}
                   secureTextEntry={true}
                   style={{
                     width: 300,
@@ -106,7 +112,9 @@ const Login = () => {
             </Pressable>
 
             <Pressable
-              onPress={() => {navigation.navigate('Register')}}
+              onPress={() => {
+                navigation.navigate("Register");
+              }}
               style={{ justifyContent: "center", marginTop: 20 }}
             >
               <Text style={{ fontSize: 16, fontWeight: 300 }}>
