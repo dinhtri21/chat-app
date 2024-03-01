@@ -7,10 +7,12 @@ import {
   View,
   Keyboard,
   Pressable,
+  Alert,
 } from "react-native";
 import React, { useState } from "react";
 import { Dimensions } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import axios from "axios";
 
 var width = Dimensions.get("window").width; //full width
 var height = Dimensions.get("window").height; //full height
@@ -21,6 +23,32 @@ const Register = () => {
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [image, setImage] = useState("");
+
+  const handleRegister = () => {
+    const user = {
+      name: name,
+      email: email,
+      password: password,
+      image: image,
+    };
+    axios
+      .post(`http://192.168.1.14:3001/user/register`, user)
+      .then((res) => {
+        console.log(res);
+        Alert.alert(
+          "Đăng ký tài khoản thành công!",
+          "You have been registered Successfully"
+        );
+        setName("");
+        setEmail("");
+        setPassword("");
+        setImage("");
+      })
+      .catch((err) => {
+        Alert.alert(err.response.data.message);
+        console.log(err.response.data.message);
+      });
+  };
   return (
     <View
       style={{
@@ -125,6 +153,7 @@ const Register = () => {
             </View>
 
             <Pressable
+              onPress={handleRegister}
               style={{
                 backgroundColor: "#4A55A2",
                 width: 200,
