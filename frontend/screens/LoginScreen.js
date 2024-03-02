@@ -9,7 +9,7 @@ import {
   Pressable,
   Alert,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Dimensions } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import axios from "axios";
@@ -29,10 +29,11 @@ const Login = () => {
       password: password,
     };
     axios
-      .post(`http://192.168.1.14:3001/user/login`, user)
+      .post(`${process.env.EXPRESS_API_URL}/user/login`, user)
       .then((res) => {
         Alert.alert(res.data.message);
-        saveToken(res.data.token);
+        const token = res.data.token;
+        saveToken(token);
         navigation.replace("Home");
       })
       .catch((err) => {
@@ -49,6 +50,27 @@ const Login = () => {
     }
   };
 
+  const checkToken = async () => {
+    const authToken = await AsyncStorage.getItem("authToken");
+    const res = await axios.get(
+      `${process.env.EXPRESS_API_URL}/user/check-token`,
+      {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        },
+      }
+    );
+    if (res.status === 200) {
+      navigation.replace("Home");
+    } else {
+      console.log("Lỗi khi kiểm tra token:");
+      return;
+    }
+  };
+
+  useEffect(() => {
+    checkToken();
+  }, []);
   return (
     <View
       style={{

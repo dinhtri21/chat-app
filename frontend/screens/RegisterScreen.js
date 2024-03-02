@@ -14,6 +14,7 @@ import { Dimensions } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import axios from "axios";
 
+
 var width = Dimensions.get("window").width; //full width
 var height = Dimensions.get("window").height; //full height
 
@@ -32,7 +33,7 @@ const Register = () => {
       image: image,
     };
     axios
-      .post(`http://192.168.1.14:3001/user/register`, user)
+      .post(`${process.env.EXPRESS_API_URL}/user/register`, user)
       .then((res) => {
         console.log(res);
         Alert.alert(
@@ -173,7 +174,7 @@ const Register = () => {
 
             <Pressable
               onPress={() => {
-                navigation.navigate("Home");
+                navigation.navigate("Login");
               }}
               style={{ justifyContent: "center", marginTop: 20 }}
             >
