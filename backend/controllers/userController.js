@@ -51,6 +51,19 @@ exports.loginUser = async (req, res) => {
     return res.status(500).json({ message: "Đã xảy ra lỗi khi đăng nhập!" });
   }
 };
+exports.getUsers = async (req, res) => {
+  const loggedInUserId = req.params.userId;
+
+  console.log(loggedInUserId);
+  User.find({ _id: { $ne: loggedInUserId } })
+    .then((users) => {
+      res.status(200).json(users);
+    })
+    .catch((err) => {
+      console.error("Error retrieving users", err);
+      res.status(500).json({ message: "Lỗi truy xuất người dùng" });
+    });
+};
 const createToken = (userId) => {
   const payload = {
     userId: userId,
@@ -58,4 +71,3 @@ const createToken = (userId) => {
   const token = jwt.sign(payload, "your_secret_key", { expiresIn: "1h" });
   return token;
 };
-
