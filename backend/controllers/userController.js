@@ -58,3 +58,4 @@ const createToken = (userId) => {
   const token = jwt.sign(payload, "your_secret_key", { expiresIn: "1h" });
   return token;
 };
+
