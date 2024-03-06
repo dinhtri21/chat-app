@@ -2,6 +2,7 @@ var logger = require("morgan");
 const express = require("express");
 require("dotenv").config(); //biến môi trường
 const userRouter = require("./routers/userRoute");
+const friendRouter = require("./routers/friendRouter")
 const cors = require("cors");
 const app = express();
 
@@ -13,6 +14,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 //router
 app.use("/user", userRouter);
+app.use("/friend", friendRouter);
 app.get("/", (req, res) => {
   res.send("Hello World!");
 });

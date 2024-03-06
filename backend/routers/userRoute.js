@@ -6,7 +6,7 @@ const authMiddleware = require("../authMiddleware");
 
 router.post("/register", registerUser);
 router.post("/login", loginUser);
-router.get("/users/:userId",authMiddleware, getUsers)
+router.get("/users/:userId", getUsers)
 router.get("/check-token", authMiddleware, (req, res) => {
   res.status(200).json({ message: "Token hợp lệ!" });
 });
