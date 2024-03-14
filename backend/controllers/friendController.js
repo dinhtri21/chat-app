@@ -29,9 +29,9 @@ exports.getListFriendRequests = async (req, res) => {
       .populate("friendRequests", "name email image") //Điền các trường name email của người vào freindRequests
       .lean();
 
-    const freindRequests = user.friendRequests;
+    const friendRequests = user.friendRequests;
 
-    res.json(freindRequests);
+    res.json(friendRequests);
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "Internal Server Error" });

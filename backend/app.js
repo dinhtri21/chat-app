@@ -10,19 +10,22 @@ const app = express();
 const http = require("http");
 const server = http.createServer(app);
 const { Server } = require("socket.io");
-const io = new Server(server)
+const io = new Server(server);
 
+const { login } = require("./sockets/friendSocket");
 
-io.on('connection', (socket) => {
-  console.log('a user connected');
-  socket.on('chat message', (msg) => {
-    console.log('message: ' + msg);
-    io.emit('chat message', msg);
-  });
-  socket.on('disconnect', () => {
-    console.log('user disconnected');
-  });
-});
+// addFriend(io);
+login(io);
+// io.on("connection", (socket) => {
+//   console.log("a user connected.");
+//   socket.on("chat message", (msg) => {
+//     console.log("message: " + msg);
+//     io.emit("chat message", msg);
+//   });
+//   socket.on("disconnect", () => {
+//     console.log("user disconnected");
+//   });
+// });
 
 // Middleware logging
 app.use(logger("dev"));
@@ -37,10 +40,9 @@ app.get("/", (req, res) => {
   res.send("Hello World!");
 });
 
-
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
-  next(createError(404))
+  next(createError(404));
 });
 
 // error handler
@@ -58,5 +60,5 @@ app.use(function (err, req, res, next) {
 // });
 
 server.listen(process.env.PORT, () => {
-  console.log('listening on *:3001');
+  console.log("listening on *:3001");
 });

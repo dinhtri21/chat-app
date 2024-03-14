@@ -52,9 +52,9 @@ exports.loginUser = async (req, res) => {
   }
 };
 exports.getUsers = async (req, res) => {
-  const loggedInUserId = req.params.userId;
+  const userId = req.params.userId;
 
-  User.find({ _id: { $ne: loggedInUserId } })
+  User.find({ _id: { $ne: userId } })
     .then((users) => {
       res.status(200).json(users);
     })
