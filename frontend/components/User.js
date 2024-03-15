@@ -32,8 +32,9 @@ const User = ({ item, requestSent, friendRequests, userId }) => {
   // };
 
   const sendFriendRequest = async (currentUserId, selectedUserId) => {
+    console.log("sjhd");
     try {
-      socket.emit("sendFriendRequest", {
+      socket.emit("friendRequest", {
         currentUserId: currentUserId,
         selectedUserId: selectedUserId,
       });

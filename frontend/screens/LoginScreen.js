@@ -47,7 +47,7 @@ const Login = () => {
       await handleSocketLogin(userIddecoded);
       navigation.replace("Home");
     } catch (err) {
-      Alert.alert(err.response.data.message);
+      Alert.alert("Lỗi handleLogin" + err);
     }
   };
 
@@ -66,7 +66,7 @@ const Login = () => {
 
     await setUserId(userIddecoded);
 
-    return userIddecoded
+    return userIddecoded;
   };
   const checkToken = async () => {
     try {
@@ -90,6 +90,7 @@ const Login = () => {
   };
 
   const handleSocketLogin = (userIddecoded) => {
+    console.log("AHja");
     socket.emit("login", { userId: userIddecoded }, () => {
       console.log("Connected to server");
     });
