@@ -3,39 +3,31 @@ import React, { useEffect, useState } from "react";
 import { socket } from "../socket";
 import axios from "axios";
 
-const User = ({ item, requestSent, friendRequests, userId }) => {
-  // const sendFriendRequest = async (currentUserId, selectedUserId) => {
-  //   try {
-  //     const res = await axios.post(
-  //       `${process.env.EXPRESS_API_URL}/friend/friend-request`,
-  //       {
-  //         currentUserId,
-  //         selectedUserId,
-  //       },
-  //       {
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //         },
-  //       }
-  //     );
-  //     if (res.status == 200) {
-  //       console.log("thành công");
-  //     }
-  //   } catch (err) {
-  //     console.log("Thất bại");
-  //   }
-  // };
+const User = ({
+  item,
+  requestSent,
+  users,
+  friendRequests,
+  listFriends,
+  userId,
+}) => {
+  const isSent = requestSent.some((user) => user._id === item._id);
+  const isUsers = users.some((user) => user._id === item._id);
+  const isFriendRequest = friendRequests.some((user) => user._id === item._id);
+  const isFriend = listFriends.some((user) => user._id === item._id);
 
-  // const sendFriendRequest = () => {
-  //   socket.emit('sendFriendRequest', 'your_user_id', friendId); // Thay 'your_user_id' bằng ID của người dùng đang đăng nhập
-  //   setFriendId('');
-  // };
-
+  const acceptFriend = async (currentUserId, selectedUserId) => {
+    try {
+      socket.emit("acceptFriend", {
+        currentUserId: currentUserId,
+        selectedUserId: selectedUserId,
+      });
+    } catch (err) {
+      console.log(err);
+    }
+  };
   const sendFriendRequest = async (currentUserId, selectedUserId) => {
     try {
-      console.log("sjhd");
-      // socket.connect();
-
       socket.emit("friendRequest", {
         currentUserId: currentUserId,
         selectedUserId: selectedUserId,
@@ -69,11 +61,8 @@ const User = ({ item, requestSent, friendRequests, userId }) => {
           <Text style={{ marginTop: 2, color: "gray" }}>{item?.email}</Text>
         </View>
       </View>
-      {requestSent.some((user) => {
-        return user._id == item._id;
-      }) ? (
+      {isSent ? (
         <Pressable
-          // onPress={() => sendFriendRequest(userId, item._id)}
           style={{
             justifyContent: "center",
             alignItems: "center",
@@ -86,11 +75,9 @@ const User = ({ item, requestSent, friendRequests, userId }) => {
         >
           <Text style={{ color: "#fff" }}>Sent</Text>
         </Pressable>
-      ) : friendRequests.some((user) => {
-          return user._id == item._id;
-        }) ? (
+      ) : isFriendRequest ? (
         <Pressable
-          // onPress={() => sendFriendRequest(userId, item._id)}
+          onPress={() => acceptFriend(userId, item._id)}
           style={{
             justifyContent: "center",
             alignItems: "center",
@@ -103,13 +90,15 @@ const User = ({ item, requestSent, friendRequests, userId }) => {
         >
           <Text style={{ color: "#fff" }}>Accept</Text>
         </Pressable>
-      ) : (
+      ) : isFriend ? (
+        <></>
+      ) : isUsers ? (
         <Pressable
           onPress={() => sendFriendRequest(userId, item._id)}
           style={{
             justifyContent: "center",
             alignItems: "center",
-            backgroundColor: "#0071d8",
+            backgroundColor: "#0178f6",
             width: 105,
             paddingVertical: 6,
             paddingHorizontal: 6,
@@ -118,21 +107,9 @@ const User = ({ item, requestSent, friendRequests, userId }) => {
         >
           <Text style={{ color: "#fff" }}>Add Friend</Text>
         </Pressable>
+      ) : (
+        <></>
       )}
-
-      {/* <Pressable
-        style={{
-          justifyContent: "center",
-          alignItems: "center",
-          backgroundColor: "#82CD47",
-          width: 105,
-          paddingVertical: 4,
-          paddingHorizontal: 4,
-          borderRadius: 4,
-        }}
-      >
-        <Text style={{ color: "#fff" }}>Friend</Text>
-      </Pressable> */}
     </Pressable>
   );
 };

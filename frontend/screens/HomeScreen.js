@@ -16,6 +16,7 @@ const HomeScreen = () => {
   const { userId, setUserId } = useContext(UserType);
   const [requestSent, setRequestSent] = useState([]);
   const [friendRequests, setFriendRequests] = useState([]);
+  const [listFriends, setListFriends] = useState([]);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -71,10 +72,7 @@ const HomeScreen = () => {
       );
       if (res.status == 200) {
         const data = res.data;
-        // const updatedRequestSent = [...requestSent];
-        // updatedRequestSent.push(res.data);
         setRequestSent(data);
-        // setRequestSent(res.data);
       } else {
         console.log("Lỗi axios getListSentFriendRequests");
       }
@@ -87,7 +85,6 @@ const HomeScreen = () => {
       const res = await axios(
         `${process.env.EXPRESS_API_URL}/friend/getListFriendRequest/${userId}`
       );
-      console.log(res);
       if (res.status == 200) {
         const data = res.data;
         setFriendRequests(data);
@@ -98,7 +95,24 @@ const HomeScreen = () => {
       console.log("Lỗi getListFriendRequests" + err);
     }
   };
+
+  const getListFriends = async () => {
+    try {
+      const res = await axios(
+        `${process.env.EXPRESS_API_URL}/friend/listFriends/${userId}`
+      );
+      if (res.status == 200) {
+        const data = res.data;
+        setListFriends(data);
+      } else {
+        console.log("Lỗi axios getListFriendRequests");
+      }
+    } catch (err) {
+      console.log("Lỗi getListFriendRequests" + err);
+    }
+  };
   useEffect(() => {
+    getListFriends();
     fetchUsers();
     getListSentFriendRequests();
     getListFriendRequests();
@@ -106,6 +120,15 @@ const HomeScreen = () => {
 
   useEffect(() => {
     socket.on("friendRequestReceived", (data) => {
+      fetchUsers();
+      getListFriends();
+      getListSentFriendRequests();
+      getListFriendRequests();
+      console.log(data.message);
+    });
+    socket.on("friendRequestAccepted", (data) => {
+      fetchUsers();
+      getListFriends();
       getListSentFriendRequests();
       getListFriendRequests();
       console.log(data.message);
@@ -120,8 +143,10 @@ const HomeScreen = () => {
             <User
               item={item}
               key={index}
+              users={users}
               requestSent={requestSent}
               friendRequests={friendRequests}
+              listFriends={listFriends}
               userId={userId}
             />
           );
