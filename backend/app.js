@@ -12,20 +12,22 @@ const server = http.createServer(app);
 const { Server } = require("socket.io");
 const io = new Server(server);
 
-const { login } = require("./sockets/friendSocket");
+const { login, addFriend } = require("./sockets/friendSocket");
 
 // addFriend(io);
-login(io);
-// io.on("connection", (socket) => {
-//   console.log("a user connected.");
-//   socket.on("chat message", (msg) => {
-//     console.log("message: " + msg);
-//     io.emit("chat message", msg);
-//   });
-//   socket.on("disconnect", () => {
-//     console.log("user disconnected");
-//   });
-// });
+
+io.on("connection", (socket) => {
+  console.log("a user connected.");
+  socket.on("login", (data) => {
+    login(data, socket);
+  });
+  socket.on("friendRequest", (data) => {
+    addFriend(data, socket, io);
+  });
+  socket.on("disconnect", () => {
+    console.log("user disconnected");
+  });
+});
 
 // Middleware logging
 app.use(logger("dev"));
