@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View } from "react-native";
+import { Alert, StyleSheet, Text, View } from "react-native";
 import React, { useEffect, useLayoutEffect, useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
@@ -9,8 +9,6 @@ import { UserType } from "../UserContext";
 import axios from "axios";
 import User from "../components/User";
 import { socket } from "../socket";
-
-// import { socket } from "../socket";
 
 const HomeScreen = () => {
   const navigation = useNavigation();
@@ -56,7 +54,8 @@ const HomeScreen = () => {
         }
       );
       if (res.status == 200) {
-        setUsers(res.data);
+        const data = res.data;
+        setUsers(data);
       } else {
         console.log(res);
       }
@@ -71,10 +70,10 @@ const HomeScreen = () => {
         `${process.env.EXPRESS_API_URL}/friend/getListSentFriendRequests/${userId}`
       );
       if (res.status == 200) {
-        const data= res.data;
-        // const updatedRequestSent = [...requestSent]; 
-        // updatedRequestSent.push(res.data); 
-        setRequestSent(data); 
+        const data = res.data;
+        // const updatedRequestSent = [...requestSent];
+        // updatedRequestSent.push(res.data);
+        setRequestSent(data);
         // setRequestSent(res.data);
       } else {
         console.log("Lỗi axios getListSentFriendRequests");
@@ -90,7 +89,8 @@ const HomeScreen = () => {
       );
       console.log(res);
       if (res.status == 200) {
-        setFriendRequests(res.data);
+        const data = res.data;
+        setFriendRequests(data);
       } else {
         console.log("Lỗi axios getListFriendRequests");
       }
@@ -107,7 +107,8 @@ const HomeScreen = () => {
   useEffect(() => {
     socket.on("friendRequestReceived", (data) => {
       getListSentFriendRequests();
-      console.log(data);
+      getListFriendRequests();
+      console.log(data.message);
     });
   }, []);
 

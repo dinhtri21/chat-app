@@ -40,6 +40,7 @@ const Login = () => {
         `${process.env.EXPRESS_API_URL}/user/login`,
         user
       );
+      console.log(res);
       Alert.alert(res.data.message);
       const token = res.data.token;
       await saveToken(token);
