@@ -23,10 +23,8 @@ exports.addFriend = async (req, res) => {
 exports.getListFriendRequests = async (req, res) => {
   try {
     const { userId } = req.params;
-
-    //
     const user = await User.findById(userId)
-      .populate("friendRequests", "name email image") //Điền các trường name email của người vào freindRequests
+      .populate("friendRequests", "name email image") //Điền các trường name email của người vào friendRequests
       .lean();
 
     const friendRequests = user.friendRequests;
@@ -48,6 +46,21 @@ exports.getListSentFriendRequests = async (req, res) => {
     const sentFriendRequests = user.sentFriendRequests;
 
     res.json(sentFriendRequests);
+  } catch (error) {
+    console.log("error", error);
+    res.status(500).json({ error: "Internal Server" });
+  }
+};
+//Lấy tất cả lời mời đã nhận
+exports.getListFriends = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const user = await User.findById(userId)
+      .populate("friends", "name email image")
+      .lean();
+
+    const friends = user.friends;
+    res.json(friends);
   } catch (error) {
     console.log("error", error);
     res.status(500).json({ error: "Internal Server" });

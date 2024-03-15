@@ -12,7 +12,7 @@ const server = http.createServer(app);
 const { Server } = require("socket.io");
 const io = new Server(server);
 
-const { addFriend } = require("./sockets/friendSocket");
+const { addFriend, acceptFriend } = require("./sockets/friendSocket");
 const { login } = require("./sockets/userSocket");
 // addFriend(io);
 
@@ -23,6 +23,9 @@ io.on("connection", (socket) => {
   });
   socket.on("friendRequest", (data) => {
     addFriend(data, socket, io);
+  });
+  socket.on("acceptFriend", (data) => {
+    acceptFriend(data, socket, io);
   });
   socket.on("disconnect", () => {
     console.log("user disconnected");
