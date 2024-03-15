@@ -12,8 +12,8 @@ const server = http.createServer(app);
 const { Server } = require("socket.io");
 const io = new Server(server);
 
-const { login, addFriend } = require("./sockets/friendSocket");
-
+const { addFriend } = require("./sockets/friendSocket");
+const { login } = require("./sockets/userSocket");
 // addFriend(io);
 
 io.on("connection", (socket) => {

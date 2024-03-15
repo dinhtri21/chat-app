@@ -2,9 +2,8 @@ const User = require("../models/user");
 const Login = require("../models/login");
 exports.addFriend = async (data, socket, io) => {
   try {
-    // Thực hiện xử lý yêu cầu kết bạn tại đây, ví dụ: lưu vào cơ sở dữ liệu
     console.log(
-      `${data.currentUserId} và ${data.selectedUserId} và ${socket.id}`
+      `Người gửi${data.currentUserId} và người nhận ${data.selectedUserId}`
     );
 
     // Tìm thông tin user gửi yêu cầu kết bạn
@@ -18,60 +17,42 @@ exports.addFriend = async (data, socket, io) => {
     if (!selectedUser) {
       throw new Error("Selected user not found");
     }
+    //Cập nhật csdl
+    await User.findByIdAndUpdate(data.selectedUserId, {
+      $push: { friendRequests: data.currentUserId },
+    });
+
+    //Gửi thông báo cho người nhận cập nhật sent
+    const currentSocketUserId = await Login.findOne({
+      userId: data.currentUserId,
+    });
+    io.to(currentSocketUserId.socketId).emit("friendRequestReceived", {
+      message: "Gửi kết bạn thành công!" 
+    });
 
     // Kiểm tra xem đã tồn tại yêu cầu kết bạn từ trước
-    // const existingRequest = currentUser.sentFriendRequests.find(
-    //   (request) => request.toString() === data.selectedUserId
-    // );
-    // if (existingRequest) {
-    //   throw new Error('Friend request already sent');
-    // }
+    const existingRequest = currentUser.sentFriendRequests.find(
+      (request) => request.toString() == data.selectedUserId
+    );
+    if (existingRequest) {
+      throw new Error("Friend request already sent");
+    }
 
     // Tạo yêu cầu kết bạn mới
     currentUser.sentFriendRequests.push(data.selectedUserId);
     await currentUser.save();
 
     // Gửi thông báo cho người nhận yêu cầu kết bạn
-    // const userId = currentUser._id;
     const selectedSocketId = await Login.findOne({
-      // userId: data.selectedUserId,
-      userId: data.currentUserId,
+      userId: data.selectedUserId,
     });
 
-    console.log(selectedSocketId);
     if (selectedSocketId) {
       io.to(selectedSocketId.socketId).emit("friendRequestReceived", {
-        currentUserId: data.currentUserId,
-        selectedUserId: data.selectedUserId,
+        message: `Người dùng ${currentUser.name} đã gửi lời mời kết bạn!`
       });
     }
-
-    // io.emit("friendRequestReceived", { currentUserId, selectedUserId });
   } catch (error) {
     console.error(error);
-  }
-};
-
-exports.login = async (data, socket) => {
-  try {
-    const userId = data.userId;
-    const socketId = socket.id;
-    // Kiểm tra xem thông tin đăng nhập đã tồn tại chưa
-    const existingLogin = await Login.findOne({ userId });
-
-    if (existingLogin) {
-      // Nếu đã tồn tại, cập nhật thông tin kết nối
-      existingLogin.socketId = socketId;
-      existingLogin.lastLoginTime = Date.now();
-      await existingLogin.save();
-    } else {
-      // Nếu chưa tồn tại, tạo mới thông tin đăng nhập
-      const newLogin = new Login({ userId, socketId });
-      await newLogin.save();
-    }
-
-    console.log(`User ${userId} logged in with socket ${socketId}`);
-  } catch (error) {
-    console.error("Error updating login info:", error);
   }
 };
