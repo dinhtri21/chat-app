@@ -1,5 +1,5 @@
 const User = require("../models/user");
-const Login = require("../models/login");
+const userStatus = require("../models/userStatus");
 exports.addFriend = async (data, socket, io) => {
   try {
     console.log(
@@ -23,7 +23,7 @@ exports.addFriend = async (data, socket, io) => {
     });
 
     //Gửi thông báo cho người nhận cập nhật sent
-    const currentSocketUserId = await Login.findOne({
+    const currentSocketUserId = await userStatus.findOne({
       userId: data.currentUserId,
     });
     io.to(currentSocketUserId.socketId).emit("friendRequestReceived", {
@@ -43,7 +43,7 @@ exports.addFriend = async (data, socket, io) => {
     await currentUser.save();
 
     // Gửi thông báo cho người nhận yêu cầu kết bạn
-    const selectedSocketId = await Login.findOne({
+    const selectedSocketId = await userStatus.findOne({
       userId: data.selectedUserId,
     });
 
@@ -88,8 +88,8 @@ exports.acceptFriend = async (data, socket, io) => {
     await selectedUser.save();
 
     // Gửi thông báo cho cả hai người dùng
-    const currentSocketId = await Login.findOne({ userId: data.currentUserId });
-    const selectedSocketId = await Login.findOne({
+    const currentSocketId = await userStatus.findOne({ userId: data.currentUserId });
+    const selectedSocketId = await userStatus.findOne({
       userId: data.selectedUserId,
     });
 

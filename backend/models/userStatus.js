@@ -1,6 +1,6 @@
 const mongoose = require("../db");
 
-const loginSchema = new mongoose.Schema({
+const userStatusSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
@@ -8,14 +8,18 @@ const loginSchema = new mongoose.Schema({
   },
   socketId: {
     type: String,
-    required: true,
   },
   lastLoginTime: {
     type: Date,
     default: Date.now,
   },
+  status: {
+    type: String,
+    enum: ["online", "offline"],
+    default: "offline",
+  },
 });
 
-const Login = mongoose.model("Login", loginSchema);
+const userStatus = mongoose.model("userStatus", userStatusSchema);
 
-module.exports = Login;
+module.exports = userStatus;
