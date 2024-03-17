@@ -1,14 +1,14 @@
-import { Alert, StyleSheet, Text, View } from "react-native";
-import React, { useEffect, useLayoutEffect, useState } from "react";
+import { Alert, StyleSheet, Text, View, Button } from "react-native";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useNavigation } from "@react-navigation/native";
-import { Ionicons } from "@expo/vector-icons";
-import { MaterialIcons } from "@expo/vector-icons";
 import { useContext } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { UserType } from "../UserContext";
-import axios from "axios";
+import axios, { CancelToken } from "axios";
 import User from "../components/User";
 import { socket } from "../socket";
+import { Ionicons } from "@expo/vector-icons";
+import { MaterialIcons } from "@expo/vector-icons";
 
 const HomeScreen = () => {
   const navigation = useNavigation();
@@ -18,36 +18,23 @@ const HomeScreen = () => {
   const [friendRequests, setFriendRequests] = useState([]);
   const [listFriends, setListFriends] = useState([]);
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     navigation.setOptions({
-      headerTitle: "",
-      headerLeft: () => (
-        <Text style={{ fontSize: 16, fontWeight: "bold" }}>Swift Chat</Text>
-      ),
-      headerRight: () => (
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-          <Ionicons
-            onPress={() => navigation.navigate("Chats")}
-            name="chatbox-ellipses-outline"
-            size={24}
-            color="black"
-          />
-          <MaterialIcons
-            onPress={() => navigation.navigate("Friends")}
-            name="people-outline"
-            size={24}
-            color="black"
-          />
-        </View>
-      ),
+      headerBackTitle: "Custom Back",
+      headerBackTitleStyle: { fontSize: 30 },
+      headerTitle: () => <Text style={styles.headerNavTitle}>Friends</Text>,
+      headerTitleAlign: "center",
     });
   }, []);
 
-  const fetchUsers = async () => {
+  const fetchUsers = async (source) => {
     const token = await AsyncStorage.getItem("authToken");
     try {
       const res = await axios.get(
         `${process.env.EXPRESS_API_URL}/user/users/${userId}`,
+        {
+          cancelToken: source.token,
+        },
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -65,10 +52,13 @@ const HomeScreen = () => {
     }
   };
 
-  const getListSentFriendRequests = async () => {
+  const getListSentFriendRequests = async (source) => {
     try {
-      const res = await axios(
-        `${process.env.EXPRESS_API_URL}/friend/getListSentFriendRequests/${userId}`
+      const res = await axios.get(
+        `${process.env.EXPRESS_API_URL}/friend/getListSentFriendRequests/${userId}`,
+        {
+          cancelToken: source.token,
+        }
       );
       if (res.status == 200) {
         const data = res.data;
@@ -80,10 +70,13 @@ const HomeScreen = () => {
       console.log("Lỗi getListSentFriendRequests" + err);
     }
   };
-  const getListFriendRequests = async () => {
+  const getListFriendRequests = async (source) => {
     try {
-      const res = await axios(
-        `${process.env.EXPRESS_API_URL}/friend/getListFriendRequest/${userId}`
+      const res = await axios.get(
+        `${process.env.EXPRESS_API_URL}/friend/getListFriendRequest/${userId}`,
+        {
+          cancelToken: source.token,
+        }
       );
       if (res.status == 200) {
         const data = res.data;
@@ -96,10 +89,13 @@ const HomeScreen = () => {
     }
   };
 
-  const getListFriends = async () => {
+  const getListFriends = async (source) => {
     try {
-      const res = await axios(
-        `${process.env.EXPRESS_API_URL}/friend/listFriends/${userId}`
+      const res = await axios.get(
+        `${process.env.EXPRESS_API_URL}/friend/listFriends/${userId}`,
+        {
+          cancelToken: source.token,
+        }
       );
       if (res.status == 200) {
         const data = res.data;
@@ -112,27 +108,35 @@ const HomeScreen = () => {
     }
   };
   useEffect(() => {
-    getListFriends();
-    fetchUsers();
-    getListSentFriendRequests();
-    getListFriendRequests();
+    const source = CancelToken.source();
+    fetchUsers(source);
+    getListFriends(source);
+    getListSentFriendRequests(source);
+    getListFriendRequests(source);
+    return () => {
+      source.cancel();
+    };
   }, []);
 
   useEffect(() => {
+    const source = CancelToken.source();
     socket.on("friendRequestReceived", (data) => {
-      fetchUsers();
-      getListFriends();
-      getListSentFriendRequests();
-      getListFriendRequests();
+      fetchUsers(source);
+      getListFriends(source);
+      getListSentFriendRequests(source);
+      getListFriendRequests(source);
       console.log(data.message);
     });
     socket.on("friendRequestAccepted", (data) => {
-      fetchUsers();
-      getListFriends();
-      getListSentFriendRequests();
-      getListFriendRequests();
+      fetchUsers(source);
+      getListFriends(source);
+      getListSentFriendRequests(source);
+      getListFriendRequests(source);
       console.log(data.message);
     });
+    return () => {
+      source.cancel();
+    };
   }, []);
 
   return (
@@ -157,4 +161,7 @@ const HomeScreen = () => {
 
 export default HomeScreen;
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  headerNavTitle: { fontSize: 16, fontWeight: "bold" },
+  containerIconLeft: { flexDirection: "row", alignItems: "center", gap: 8 },
+});

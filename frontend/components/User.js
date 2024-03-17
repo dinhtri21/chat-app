@@ -38,74 +38,33 @@ const User = ({
   };
 
   return (
-    <Pressable
-      style={{
-        // backgroundColor: "#fff",
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "space-between",
-      }}
-    >
-      <View style={{ flexDirection: "row", alignItems: "center", gap: 2 }}>
-        <Image
-          style={{
-            width: 50,
-            height: 50,
-            borderRadius: 25,
-            resizeMode: "cover",
-          }}
-          source={{ uri: item.image }}
-        />
+    <Pressable style={styles.containerUser}>
+      <View style={styles.containerInfo}>
+        <Image style={styles.infoImg} source={{ uri: item.image }} />
         <View style={{ marginLeft: 12 }}>
-          <Text style={{ fontWeight: 400 }}>{item?.name}</Text>
-          <Text style={{ marginTop: 2, color: "gray" }}>{item?.email}</Text>
+          <Text style={styles.infoName}>{item?.name}</Text>
+          <Text style={styles.infoEmail}>{item?.email}</Text>
         </View>
       </View>
       {isSent ? (
-        <Pressable
-          style={{
-            justifyContent: "center",
-            alignItems: "center",
-            backgroundColor: "gray",
-            width: 105,
-            paddingVertical: 6,
-            paddingHorizontal: 6,
-            borderRadius: 4,
-          }}
-        >
-          <Text style={{ color: "#fff" }}>Sent</Text>
+        <Pressable style={styles.sentBtn}>
+          <Text style={styles.textBtn}>Sent</Text>
         </Pressable>
       ) : isFriendRequest ? (
         <Pressable
           onPress={() => acceptFriend(userId, item._id)}
-          style={{
-            justifyContent: "center",
-            alignItems: "center",
-            backgroundColor: "#82CD47",
-            width: 105,
-            paddingVertical: 6,
-            paddingHorizontal: 6,
-            borderRadius: 4,
-          }}
+          style={styles.friendBtn}
         >
-          <Text style={{ color: "#fff" }}>Accept</Text>
+          <Text style={styles.textBtn}>Accept</Text>
         </Pressable>
       ) : isFriend ? (
         <></>
       ) : isUsers ? (
         <Pressable
           onPress={() => sendFriendRequest(userId, item._id)}
-          style={{
-            justifyContent: "center",
-            alignItems: "center",
-            backgroundColor: "#0178f6",
-            width: 105,
-            paddingVertical: 6,
-            paddingHorizontal: 6,
-            borderRadius: 4,
-          }}
+          style={styles.usersBtn}
         >
-          <Text style={{ color: "#fff" }}>Add Friend</Text>
+          <Text style={styles.textBtn}>Add Friend</Text>
         </Pressable>
       ) : (
         <></>
@@ -116,4 +75,47 @@ const User = ({
 
 export default User;
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  containerUser: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  containerInfo: { flexDirection: "row", alignItems: "center", gap: 2 },
+  infoImg: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    resizeMode: "cover",
+  },
+  infoName: { fontSize: 15, fontWeight: "400" },
+  infoEmail: { marginTop: 2, color: "gray" },
+  sentBtn: {
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "gray",
+    width: 105,
+    paddingVertical: 6,
+    paddingHorizontal: 6,
+    borderRadius: 4,
+  },
+  friendBtn: {
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#82CD47",
+    width: 105,
+    paddingVertical: 6,
+    paddingHorizontal: 6,
+    borderRadius: 4,
+  },
+  usersBtn: {
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#0178f6",
+    width: 105,
+    paddingVertical: 6,
+    paddingHorizontal: 6,
+    borderRadius: 4,
+  },
+  textBtn: { color: "#fff" },
+});
