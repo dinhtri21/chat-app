@@ -51,7 +51,7 @@ exports.loginUser = async (req, res) => {
     return res.status(500).json({ message: "Đã xảy ra lỗi khi đăng nhập!" });
   }
 };
-exports.getUsers = async (req, res) => {
+exports.getAllUsers = async (req, res) => {
   const userId = req.params.userId;
 
   User.find({ _id: { $ne: userId } })
@@ -62,6 +62,19 @@ exports.getUsers = async (req, res) => {
       console.error("Error retrieving users", err);
       res.status(500).json({ message: "Lỗi truy xuất người dùng" });
     });
+};
+exports.getUserByID = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: "Không tìm thấy người dùng!" });
+    }
+    res.status(200).json({ user });
+  } catch (err) {
+    console.error("Error fetching user:", err);
+    res.status(500).json({ error: "Server error" });
+  }
 };
 const createToken = (userId) => {
   const payload = {

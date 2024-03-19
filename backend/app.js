@@ -3,7 +3,8 @@ const express = require("express");
 require("dotenv").config(); //biến môi trường
 const userRouter = require("./routers/userRoute");
 const friendRouter = require("./routers/friendRouter");
-
+const userStatus = require("./models/userStatus");
+const messages = require("./routers/messages");
 const cors = require("cors");
 const app = express();
 //socket io
@@ -14,6 +15,7 @@ const io = new Server(server);
 
 const { addFriend, acceptFriend } = require("./sockets/friendSocket");
 const { login } = require("./sockets/userSocket");
+const { sendMessage } = require("./sockets/messageSocket");
 // addFriend(io);
 
 io.on("connection", (socket) => {
@@ -24,11 +26,28 @@ io.on("connection", (socket) => {
   socket.on("friendRequest", (data) => {
     addFriend(data, socket, io);
   });
+  socket.on("sendMessage", (data) => {
+    sendMessage(data, socket, io);
+  });
   socket.on("acceptFriend", (data) => {
     acceptFriend(data, socket, io);
   });
-  socket.on("disconnect", () => {
+  socket.on("disconnect", async () => {
     console.log("user disconnected");
+    try {
+      const user = await userStatus.findOneAndUpdate(
+        { socketId: socket.id },
+        { status: "offline" },
+        { new: true }
+      );
+      if (user) {
+        console.log(`User status updated: ${user.userId}`);
+      } else {
+        console.log("User status not found or already offline.");
+      }
+    } catch (err) {
+      console.error("Error updating user status:", err);
+    }
   });
 });
 
@@ -41,6 +60,7 @@ app.use(express.urlencoded({ extended: true }));
 //router
 app.use("/user", userRouter);
 app.use("/friend", friendRouter);
+app.use("/messages", messages);
 app.get("/", (req, res) => {
   res.send("Hello World!");
 });
