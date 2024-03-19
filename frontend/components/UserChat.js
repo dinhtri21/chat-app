@@ -1,9 +1,16 @@
 import { Pressable, StyleSheet, Text, View, Image } from "react-native";
 import React from "react";
+import { useNavigation } from "@react-navigation/native";
 
 const UserChat = ({ item }) => {
+  const navigation = useNavigation();
   return (
-    <Pressable style={styles.containerUserChat}>
+    <Pressable
+      onPress={() => {
+        navigation.navigate("Messages", { recepientId: item._id });
+      }}
+      style={styles.containerUserChat}
+    >
       <View style={styles.containerInfo}>
         <Image style={styles.infoImg} source={{ uri: item.image }} />
         <View style={{ marginLeft: 12 }}>

@@ -31,7 +31,7 @@ const HomeScreen = () => {
     const token = await AsyncStorage.getItem("authToken");
     try {
       const res = await axios.get(
-        `${process.env.EXPRESS_API_URL}/user/users/${userId}`,
+        `${process.env.EXPRESS_API_URL}/user/allUsers/${userId}`,
         {
           cancelToken: source.token,
         },
