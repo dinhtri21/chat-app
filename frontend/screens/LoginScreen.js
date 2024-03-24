@@ -24,11 +24,11 @@ var width = Dimensions.get("window").width; //full width
 var height = Dimensions.get("window").height; //full height
 
 const Login = () => {
+  const cancelTokenSource = CancelToken.source();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigation = useNavigation();
   const { userId, setUserId } = useContext(UserType);
-
   const [processing, setProcessing] = useState(false);
 
   const handleLogin = async () => {
@@ -42,7 +42,10 @@ const Login = () => {
     try {
       const res = await axios.post(
         `${process.env.EXPRESS_API_URL}/user/login`,
-        user
+        user,
+        {
+          cancelToken: cancelTokenSource.token, // Sử dụng token từ cancel token source
+        }
       );
       if (res.status == 200) {
         const token = res.data.token;
@@ -54,7 +57,7 @@ const Login = () => {
         Alert.alert(`Đăng nhập không thành công! + ${res.data}`);
       }
     } catch (err) {
-      Alert.alert("Lỗi handleLogin" + err);
+      Alert.alert("Đăng nhập thất bại!");
       console.log("Lỗi handleLogin" + err);
     } finally {
       setProcessing(false); // Kết thúc xử lý
@@ -77,7 +80,7 @@ const Login = () => {
 
     return userIddecoded;
   };
-  const checkToken = async (source) => {
+  const checkToken = async () => {
     try {
       const authToken = await AsyncStorage.getItem("authToken");
       if (!authToken) {
@@ -86,7 +89,7 @@ const Login = () => {
       const response = await axios.get(
         `${process.env.EXPRESS_API_URL}/user/check-token`,
         {
-          cancelToken: source.token,
+          cancelToken: cancelTokenSource.token,
           headers: {
             Authorization: `Bearer ${authToken}`,
           },
@@ -116,12 +119,9 @@ const Login = () => {
   };
 
   useEffect(() => {
-    // socket.disconnect();
-    const source = CancelToken.source();
-    // socket.connect();
-    checkToken(source);
+    //checkToken()
     return () => {
-      source.cancel();
+      cancelTokenSource.cancel();
     };
   }, []);
 

@@ -19,8 +19,8 @@ const User = ({
   const acceptFriend = async (currentUserId, selectedUserId) => {
     try {
       socket.emit("acceptFriend", {
-        currentUserId: currentUserId,
-        selectedUserId: selectedUserId,
+        senderId: currentUserId,
+        receiverId: selectedUserId,
       });
     } catch (err) {
       console.log(err);
@@ -29,8 +29,8 @@ const User = ({
   const sendFriendRequest = async (currentUserId, selectedUserId) => {
     try {
       socket.emit("friendRequest", {
-        currentUserId: currentUserId,
-        selectedUserId: selectedUserId,
+        senderId: currentUserId,
+        receiverId: selectedUserId,
       });
     } catch (err) {
       console.log(err);

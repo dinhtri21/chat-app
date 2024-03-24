@@ -11,6 +11,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { MaterialIcons } from "@expo/vector-icons";
 
 const HomeScreen = () => {
+  const cancelTokenSource = CancelToken.source();
   const navigation = useNavigation();
   const [users, setUsers] = useState([]);
   const { userId, setUserId } = useContext(UserType);
@@ -27,13 +28,13 @@ const HomeScreen = () => {
     });
   }, []);
 
-  const fetchUsers = async (source) => {
+  const fetchUsers = async () => {
     const token = await AsyncStorage.getItem("authToken");
     try {
       const res = await axios.get(
         `${process.env.EXPRESS_API_URL}/user/allUsers/${userId}`,
         {
-          cancelToken: source.token,
+          cancelToken: cancelTokenSource.token,
         },
         {
           headers: {
@@ -52,12 +53,12 @@ const HomeScreen = () => {
     }
   };
 
-  const getListSentFriendRequests = async (source) => {
+  const getListSentFriendRequests = async () => {
     try {
       const res = await axios.get(
         `${process.env.EXPRESS_API_URL}/friend/getListSentFriendRequests/${userId}`,
         {
-          cancelToken: source.token,
+          cancelToken: cancelTokenSource.token,
         }
       );
       if (res.status == 200) {
@@ -70,12 +71,12 @@ const HomeScreen = () => {
       console.log("Lỗi getListSentFriendRequests" + err);
     }
   };
-  const getListFriendRequests = async (source) => {
+  const getListFriendRequests = async () => {
     try {
       const res = await axios.get(
         `${process.env.EXPRESS_API_URL}/friend/getListFriendRequest/${userId}`,
         {
-          cancelToken: source.token,
+          cancelToken: cancelTokenSource.token,
         }
       );
       if (res.status == 200) {
@@ -89,12 +90,12 @@ const HomeScreen = () => {
     }
   };
 
-  const getListFriends = async (source) => {
+  const getListFriends = async () => {
     try {
       const res = await axios.get(
         `${process.env.EXPRESS_API_URL}/friend/listFriends/${userId}`,
         {
-          cancelToken: source.token,
+          cancelToken: cancelTokenSource.token,
         }
       );
       if (res.status == 200) {
@@ -108,34 +109,26 @@ const HomeScreen = () => {
     }
   };
   useEffect(() => {
-    const source = CancelToken.source();
-    fetchUsers(source);
-    getListFriends(source);
-    getListSentFriendRequests(source);
-    getListFriendRequests(source);
+    fetchUsers();
+    getListFriends();
+    getListSentFriendRequests();
+    getListFriendRequests();
     return () => {
-      source.cancel();
+      cancelTokenSource.cancel();
     };
   }, []);
 
   useEffect(() => {
-    const source = CancelToken.source();
-    socket.on("friendRequestReceived", (data) => {
-      fetchUsers(source);
-      getListFriends(source);
-      getListSentFriendRequests(source);
-      getListFriendRequests(source);
-      console.log(data.message);
-    });
-    socket.on("friendRequestAccepted", (data) => {
-      fetchUsers(source);
-      getListFriends(source);
-      getListSentFriendRequests(source);
-      getListFriendRequests(source);
-      console.log(data.message);
+    socket.on("addFriendStatus", (data) => {
+      if (data.success == true) {
+        fetchUsers();
+        getListFriends();
+        getListSentFriendRequests();
+        getListFriendRequests();
+      }
     });
     return () => {
-      source.cancel();
+      cancelTokenSource.cancel();
     };
   }, []);
 

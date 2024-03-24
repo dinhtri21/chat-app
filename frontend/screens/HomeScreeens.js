@@ -9,6 +9,7 @@ import { useContext } from "react";
 import UserChat from "../components/UserChat";
 
 const HomeScreeens = () => {
+  const cancelTokenSource = CancelToken.source();
   const navigation = useNavigation();
   const { userId, setUserId } = useContext(UserType);
   const [listFriends, setListFriends] = useState([]);
@@ -37,12 +38,12 @@ const HomeScreeens = () => {
     });
   }, []);
 
-  const getListFriends = async (source) => {
+  const getListFriends = async () => {
     try {
       const res = await axios.get(
         `${process.env.EXPRESS_API_URL}/friend/listFriends/${userId}`,
         {
-          cancelToken: source.token,
+          cancelToken: cancelTokenSource.token,
         }
       );
       if (res.status == 200) {
@@ -56,11 +57,9 @@ const HomeScreeens = () => {
     }
   };
   useEffect(() => {
-    const source = CancelToken.source();
-    getListFriends(source);
-
+    getListFriends();
     return () => {
-      source.cancel();
+      cancelTokenSource.cancel();
     };
   }, []);
   return (
