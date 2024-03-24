@@ -10,15 +10,16 @@ exports.login = async (data, socket) => {
       socket.emit("loginError", "Không tìm thấy người dùng");
       return;
     }
-    //Thêm vào tất cả các nhóm thuộc về 
+    //Thêm vào tất cả các nhóm thuộc về
     if (user.groups.length > 0) {
       user.groups.forEach((group) => {
         socket.join(group._id.toString());
       });
     } else {
-      console.log("Người dùng chưa có nhóm")
+      console.log("Người dùng chưa có nhóm");
     }
 
+    // console.log(socket.rooms); Xem nhóm của socket đang ở
     console.log(`User ${userId} logged in with socket ${socketId}`);
     socket.emit("loginSuccess", { message: "Login successful" });
   } catch (error) {

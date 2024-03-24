@@ -1,5 +1,4 @@
 const User = require("../models/user");
-const userStatus = require("../models/userStatus");
 const Group = require("../models/group");
 exports.addFriend = async (data, socket, io) => {
   try {
@@ -64,50 +63,60 @@ exports.addFriend = async (data, socket, io) => {
 exports.acceptFriend = async (data, socket, io) => {
   try {
     // Tìm thông tin user chấp nhận kết bạn
-    const currentUser = await User.findById(data.currentUserId);
-    if (!currentUser) {
-      throw new Error("User not found");
+    const acceptor = await User.findById(data.acceptorId);
+    if (!acceptor) {
+      throw new Error("Không tìm thấy người chấp nhật yêu cầu kết bạn!");
     }
 
     // Tìm thông tin user gửi yêu cầu kết bạn
-    const selectedUser = await User.findById(data.selectedUserId);
-    if (!selectedUser) {
-      throw new Error("Selected user not found");
+    const sender = await User.findById(data.senderId);
+    if (!sender) {
+      throw new Error("Không tìm thấy người gửi yêu cầu kết bạn!");
+    }
+
+    // Kiểm tra xem đã tồn tại bạn từ trước
+    const existingFriends = await acceptor.friends.find((request) =>
+      request.equals(sender._id)
+    );
+    if (existingFriends) {
+      throw new Error("Đã là bạn!");
+    }
+    const existingFriends1 = await sender.friends.find((request) =>
+      request.equals(acceptor._id)
+    );
+    if (existingFriends1) {
+      throw new Error("Đã là bạn!");
     }
 
     // Cập nhật danh sách bạn bè của cả hai người dùng
-    currentUser.friends.push(data.selectedUserId);
-    selectedUser.friends.push(data.currentUserId);
+    acceptor.friends.push(sender._id);
+    sender.friends.push(acceptor._id);
 
     // Loại bỏ yêu cầu kết bạn khỏi danh sách
-    currentUser.friendRequests = currentUser.friendRequests.filter(
-      (request) => request.toString() !== data.selectedUserId
+    acceptor.friendRequests = acceptor.friendRequests.filter(
+      (request) => request.toString() !== sender._id.toString()
     );
-    selectedUser.sentFriendRequests = selectedUser.sentFriendRequests.filter(
-      (request) => request.toString() !== data.currentUserId
+    sender.sentFriendRequests = sender.sentFriendRequests.filter(
+      (request) => request.toString() !== acceptor._id.toString()
     );
 
     // Lưu các thay đổi vào csdl
-    await currentUser.save();
-    await selectedUser.save();
+    await acceptor.save();
+    await sender.save();
 
-    // Gửi thông báo cho cả hai người dùng
-    const currentSocketId = await userStatus.findOne({
-      userId: data.currentUserId,
-    });
-    const selectedSocketId = await userStatus.findOne({
-      userId: data.selectedUserId,
+    // Tìm group chung giữa acceptor và sender
+    const commonGroup = await Group.findOne({
+      members: { $all: [acceptor._id, sender._id] },
     });
 
-    if (currentSocketId && selectedSocketId) {
-      io.to(currentSocketId.socketId).emit("friendRequestAccepted", {
-        message: `Bạn đã chấp nhận lời mời kết bạn từ ${selectedUser.name}`,
-      });
-      io.to(selectedSocketId.socketId).emit("friendRequestAccepted", {
-        message: `${currentUser.name} đã chấp nhận lời mời kết bạn của bạn`,
+    // Gửi emit cho các thành viên trong group
+    if (commonGroup) {
+      io.to(commonGroup._id.toString()).emit("friendRequestAccepted", {
+        status: "success",
+        message: `Chấp nhận kết bạn thành công`,
       });
     }
   } catch (error) {
-    console.error(error);
+    console.error("Lỗi hàm acceptFriend socket io: " + error);
   }
 };
