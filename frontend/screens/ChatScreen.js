@@ -7,7 +7,7 @@ import {
   TextInput,
   KeyboardAvoidingView,
   ScrollView,
-  Platform
+  Platform,
 } from "react-native";
 import React, {
   useState,
@@ -31,7 +31,7 @@ const ChatScreen = () => {
   const { userId, setUserId } = useContext(UserType);
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState("");
-  const source = CancelToken.source();
+  const cancelTokenSource = CancelToken.source();
   const scrollViewRef = useRef();
 
   useEffect(() => {
@@ -62,7 +62,7 @@ const ChatScreen = () => {
       const res = await axios.get(
         `${process.env.EXPRESS_API_URL}/user/user/${recepientId}`,
         {
-          cancelToken: source.token,
+          cancelToken: cancelTokenSource.token,
         }
       );
       if (res.status == 200) {
@@ -81,11 +81,10 @@ const ChatScreen = () => {
       const response = await axios.get(
         `${process.env.EXPRESS_API_URL}/messages/getMessages/${userId}/${recepientId}`,
         {
-          cancelToken: source.token,
+          cancelToken: cancelTokenSource.token,
         }
       );
       if (response.status === 200) {
-        console.log(response.data);
         setMessages(response.data.messages);
       } else {
         console.log(response);
@@ -105,7 +104,6 @@ const ChatScreen = () => {
         timeStamp: new Date().toISOString(),
       });
       setInputMessage("");
-      fetchMessages(); // Xóa nội dung tin nhắn sau khi gửi
     }
   };
 
@@ -141,12 +139,13 @@ const ChatScreen = () => {
     fetchRecepientData();
     fetchMessages();
     return () => {
-      source.cancel();
+      cancelTokenSource.cancel();
     };
   }, []);
+
   useEffect(() => {
-    socket.on("newMessage", (message) => {
-      setMessages((prevMessages) => [...prevMessages, message]);
+    socket.on("newMessage", (data) => {
+      setMessages((prevMessages) => [...prevMessages, data.message]);
     });
   }, []);
 
@@ -163,7 +162,7 @@ const ChatScreen = () => {
 
       {/* Thanh input */}
       <KeyboardAvoidingView
-         behavior={Platform.OS === "ios" ? "padding" : "height"}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.inputContainer}
       >
         <Entypo name="emoji-happy" size={24} color="black" />

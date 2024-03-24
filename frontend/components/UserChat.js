@@ -1,9 +1,14 @@
 import { Pressable, StyleSheet, Text, View, Image } from "react-native";
 import React from "react";
 import { useNavigation } from "@react-navigation/native";
+import moment from "moment";
 
 const UserChat = ({ item }) => {
   const navigation = useNavigation();
+  // Định dạng thời gian theo múi giờ Việt Nam
+  const formattedTime = moment(item.latestMessage?.timeStamp)
+    .utcOffset("+0700")
+    .format("HH:mm"); // Định dạng chỉ giờ: phút
   return (
     <Pressable
       onPress={() => {
@@ -15,11 +20,13 @@ const UserChat = ({ item }) => {
         <Image style={styles.infoImg} source={{ uri: item.image }} />
         <View style={{ marginLeft: 12 }}>
           <Text style={styles.infoName}>{item?.name}</Text>
-          <Text style={styles.infoLastMessage}>last message come here</Text>
+          <Text style={styles.infoLastMessage}>
+            {item?.latestMessage?.message}
+          </Text>
         </View>
       </View>
       <View>
-        <Text style={styles.lastMessageTime}>3:00 pm</Text>
+        <Text style={styles.lastMessageTime}>{formattedTime}</Text>
       </View>
     </Pressable>
   );

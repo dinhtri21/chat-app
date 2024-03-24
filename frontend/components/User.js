@@ -2,6 +2,7 @@ import { Pressable, StyleSheet, Text, View, Image } from "react-native";
 import React, { useEffect, useState } from "react";
 import { socket } from "../socket";
 import axios from "axios";
+import { useNavigation } from "@react-navigation/native";
 
 const User = ({
   item,
@@ -15,12 +16,13 @@ const User = ({
   const isUsers = users.some((user) => user._id === item._id);
   const isFriendRequest = friendRequests.some((user) => user._id === item._id);
   const isFriend = listFriends.some((user) => user._id === item._id);
+  const navigation = useNavigation();
 
   const acceptFriend = async (currentUserId, selectedUserId) => {
     try {
       socket.emit("acceptFriend", {
-        senderId: currentUserId,
-        receiverId: selectedUserId,
+        acceptorId: currentUserId,
+        senderId: selectedUserId,
       });
     } catch (err) {
       console.log(err);
@@ -38,7 +40,12 @@ const User = ({
   };
 
   return (
-    <Pressable style={styles.containerUser}>
+    <Pressable
+      onPress={() => {
+        navigation.navigate("Messages", { recepientId: item._id });
+      }}
+      style={styles.containerUser}
+    >
       <View style={styles.containerInfo}>
         <Image style={styles.infoImg} source={{ uri: item.image }} />
         <View style={{ marginLeft: 12 }}>

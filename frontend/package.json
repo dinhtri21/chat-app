@@ -19,6 +19,7 @@
     "expo": "~50.0.8",
     "expo-constants": "~15.4.5",
     "expo-status-bar": "~1.11.1",
+    "moment": "^2.30.1",
     "parseuri": "^0.0.6",
     "react": "18.2.0",
     "react-native": "0.73.4",

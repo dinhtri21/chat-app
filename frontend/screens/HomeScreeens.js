@@ -7,6 +7,7 @@ import axios, { CancelToken } from "axios";
 import { UserType } from "../UserContext";
 import { useContext } from "react";
 import UserChat from "../components/UserChat";
+import { socket } from "../socket";
 
 const HomeScreeens = () => {
   const cancelTokenSource = CancelToken.source();
@@ -48,7 +49,23 @@ const HomeScreeens = () => {
       );
       if (res.status == 200) {
         const data = res.data;
-        setListFriends(data);
+        const updatedList = await Promise.all(
+          data.map(async (user) => {
+            // Lấy tin nhắn mới nhất cho mỗi user
+            const latestMessage = await getLatestMessage(user._id);
+            return { ...user, latestMessage };
+          })
+        );
+        // Sắp xếp danh sách theo thứ tự tin nhắn mới nhất
+        updatedList.sort((a, b) => {
+          if (!a.latestMessage) return 1; // Đẩy những user không có tin nhắn lên trên
+          if (!b.latestMessage) return -1;
+          return (
+            new Date(b.latestMessage.timeStamp) -
+            new Date(a.latestMessage.timeStamp)
+          );
+        });
+        setListFriends(updatedList);
       } else {
         console.log("Lỗi axios getListFriendRequests");
       }
@@ -56,12 +73,36 @@ const HomeScreeens = () => {
       console.log("Lỗi getListFriendRequests" + err);
     }
   };
+  const getLatestMessage = async (recepientId) => {
+    try {
+      const res = await axios.get(
+        `${process.env.EXPRESS_API_URL}/messages/getLatestMessage/${userId}/${recepientId}`,
+        {
+          cancelToken: cancelTokenSource.token,
+        }
+      );
+      if (res.status === 200) {
+        return res.data.message;
+      }
+    } catch (err) {
+      console.log("Lỗi getLatestMessage: " + err);
+    }
+    return null;
+  };
+
   useEffect(() => {
     getListFriends();
     return () => {
       cancelTokenSource.cancel();
     };
   }, []);
+
+  useEffect(() => {
+    socket.on("newMessage", (data) => {
+      getListFriends();
+    });
+  }, []);
+
   return (
     <>
       <View>

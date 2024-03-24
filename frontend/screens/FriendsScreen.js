@@ -127,6 +127,14 @@ const HomeScreen = () => {
         getListFriendRequests();
       }
     });
+    socket.on("friendRequestAccepted", (data) => {
+      if (data.status == "success") {
+        fetchUsers();
+        getListFriends();
+        getListSentFriendRequests();
+        getListFriendRequests();
+      }
+    });
     return () => {
       cancelTokenSource.cancel();
     };
