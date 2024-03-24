@@ -1,23 +1,22 @@
 const User = require("../models/user");
-const userStatus = require("../models/userStatus");
 
 exports.login = async (data, socket) => {
   try {
     const userId = data.userId;
     const socketId = socket.id;
-    // Kiểm tra xem thông tin đăng nhập đã tồn tại chưa
-    const existingLogin = await userStatus.findOne({ userId });
 
-    // Nếu đã tồn tại, cập nhật thông tin kết nối và status
-    if (existingLogin) {
-      existingLogin.socketId = socketId;
-      existingLogin.lastLoginTime = Date.now();
-      existingLogin.status = "online"; 
-      await existingLogin.save();
+    const user = await User.findById(userId).populate("groups");
+    if (!user) {
+      socket.emit("loginError", "Không tìm thấy người dùng");
+      return;
+    }
+    //Thêm vào tất cả các nhóm thuộc về 
+    if (user.groups.length > 0) {
+      user.groups.forEach((group) => {
+        socket.join(group._id.toString());
+      });
     } else {
-      // Nếu chưa tồn tại, tạo mới thông tin đăng nhập
-      const newLogin = new userStatus({ userId, socketId, status: "online" });
-      await newLogin.save();
+      console.log("Người dùng chưa có nhóm")
     }
 
     console.log(`User ${userId} logged in with socket ${socketId}`);
