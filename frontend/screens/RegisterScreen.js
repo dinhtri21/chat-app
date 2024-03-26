@@ -14,7 +14,6 @@ import { Dimensions } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import axios from "axios";
 
-
 var width = Dimensions.get("window").width; //full width
 var height = Dimensions.get("window").height; //full height
 
@@ -35,7 +34,6 @@ const Register = () => {
     axios
       .post(`${process.env.EXPRESS_API_URL}/user/register`, user)
       .then((res) => {
-        console.log(res);
         Alert.alert(
           "Đăng ký tài khoản thành công!",
           "You have been registered Successfully"

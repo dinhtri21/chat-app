@@ -1,5 +1,5 @@
 import { Pressable, StyleSheet, Text, View, Image } from "react-native";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 import moment from "moment";
 import { useContext } from "react";
@@ -7,39 +7,59 @@ import { UserType } from "../UserContext";
 
 const UserChat = ({ item }) => {
   const { userId, setUserId } = useContext(UserType);
+  const [backgroundColor, setBackgroundColor] = useState("transparent");
   const navigation = useNavigation();
   // Định dạng thời gian theo múi giờ Việt Nam
-  const formattedTime = moment(item.latestMessage?.timeStamp)
+  const formattedTime = moment(item?.latestMessage?.timeStamp)
     .utcOffset("+0700")
     .format("HH:mm"); // Định dạng chỉ giờ: phút
-  return item.members.map((member, index) => {
-    return userId !== member._id ? (
-      <Pressable
-        key={index}
-        onPress={() => {
-          navigation.navigate("Messages", { recepientId: member._id });
-        }}
-        style={styles.containerUserChat}
-      >
-        <View style={styles.containerInfo}>
-          <Image style={styles.infoImg} source={{ uri: member.image }} />
-          <View style={styles.infoNameMessLast}>
-            <Text style={styles.infoName}>{member?.name}</Text>
-            <Text
-              ellipsizeMode="tail"
-              numberOfLines={1}
-              style={styles.infoLastMessage}
-            >
-              {member?.latestMessage?.message}
+
+  useEffect(() => {
+    if (item?.latestMessage?.isNew) {
+      setBackgroundColor("red");
+      const timeout = setTimeout(() => {
+        setBackgroundColor("transparent");
+      }, 1000); // Thay đổi màu sau 1 giây
+      return () => clearTimeout(timeout);
+    }
+  }, []);
+  
+  return (
+    item?.latestMessage?.message &&
+    item.members.map((member, index) => {
+      return userId !== member._id ? (
+        <Pressable
+          key={index}
+          onPress={() => {
+            navigation.navigate("Messages", { recepientId: member._id });
+          }}
+          style={[
+            styles.containerUserChat,
+            { backgroundColor: backgroundColor },
+          ]}
+        >
+          <View style={styles.containerInfo}>
+            <Image style={styles.infoImg} source={{ uri: member.image }} />
+            <View style={styles.infoNameMessLast}>
+              <Text style={styles.infoName}>{member?.name}</Text>
+              <Text
+                ellipsizeMode="tail"
+                numberOfLines={1}
+                style={styles.infoLastMessage}
+              >
+                {item?.latestMessage?.message}
+              </Text>
+            </View>
+          </View>
+          <View style={styles.containerLastMessageTime}>
+            <Text style={styles.lastMessageTime}>
+              {item?.latestMessage?.message && formattedTime}
             </Text>
           </View>
-        </View>
-        <View style={styles.containerLastMessageTime}>
-          <Text style={styles.lastMessageTime}>{formattedTime}</Text>
-        </View>
-      </Pressable>
-    ) : null;
-  });
+        </Pressable>
+      ) : null;
+    })
+  );
 };
 
 export default UserChat;

@@ -8,7 +8,10 @@ import {
   KeyboardAvoidingView,
   ScrollView,
   Platform,
+  Pressable,
+  FlatList,
 } from "react-native";
+
 import React, {
   useState,
   useEffect,
@@ -22,6 +25,9 @@ import { Ionicons } from "@expo/vector-icons";
 import { Entypo } from "@expo/vector-icons";
 import { UserType } from "../UserContext";
 import { socket } from "../socket";
+import { AntDesign } from "@expo/vector-icons";
+import { EvilIcons } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
 
 const ChatScreen = () => {
   const route = useRoute();
@@ -33,6 +39,8 @@ const ChatScreen = () => {
   const [inputMessage, setInputMessage] = useState("");
   const cancelTokenSource = CancelToken.source();
   const scrollViewRef = useRef();
+  const [selectedImages, setSelectedImages] = useState([]);
+  const [isOpen, setIsOpen] = useState(false); // State để hiển thị emoji picker
 
   useEffect(() => {
     navigation.setOptions({
@@ -57,6 +65,7 @@ const ChatScreen = () => {
     });
   }, [recepientData]);
 
+  // BEGIN: NHẮN TIN //
   const fetchRecepientData = async () => {
     try {
       const res = await axios.get(
@@ -107,7 +116,7 @@ const ChatScreen = () => {
     }
   };
 
-  //render tin nhắn
+  // Render tin nhắn
   const renderMessageBubble = (message, index) => {
     const isUserMessage = message.senderId === userId;
     return (
@@ -125,8 +134,7 @@ const ChatScreen = () => {
       </View>
     );
   };
-
-  // Khi tin nhắn mới được thêm vào, cuộn tự động xuống cuối
+  // Cuộn tin nhắn
   const scrollToBottom = () => {
     scrollViewRef.current?.scrollToEnd({ animated: true });
   };
@@ -134,6 +142,62 @@ const ChatScreen = () => {
   useLayoutEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // END: NHẮN TIN //
+  // BEGIN: XỬ LÍ CHỌN ẢNH //
+  useEffect(() => {
+    (async () => {
+      const { status } =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== "granted") {
+        alert("Quyền truy cập thư viện ảnh bị từ chối!");
+      }
+    })();
+  }, []);
+
+  const pickImages = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsMultipleSelection: true,
+      // allowsEditing: true,
+      quality: 1,
+    });
+
+    if (!result.cancelled) {
+      const newSelectedImages = result.assets.map((image) => {
+        return image.uri;
+      });
+      setSelectedImages((prevImages) => [...prevImages, ...newSelectedImages]);
+    }
+  };
+  const renderImageItem = ({ item }) => {
+    return (
+      <View
+        style={styles.imageItemContainer}
+        // onPress={() => handleImagePress(item)}
+      >
+        <Pressable
+          style={styles.deleteIconImage}
+          onPress={() => handleDeleteImage(item)}
+        >
+          <EvilIcons
+            style={{ borderRadius: 50, marginLeft: -2 }}
+            name="close-o"
+            size={24}
+            color="black"
+          />
+        </Pressable>
+        <Image source={{ uri: item }} style={styles.imagePicker} />
+      </View>
+    );
+  };
+  const handleDeleteImage = (item) => {
+    const updatedImages = selectedImages.filter(
+      (imageUri) => item !== imageUri
+    );
+    setSelectedImages(updatedImages);
+  };
+  // END: XỬ LÍ CHỌN ẢNH //
 
   useEffect(() => {
     fetchRecepientData();
@@ -149,6 +213,7 @@ const ChatScreen = () => {
     });
   }, []);
 
+  
   return (
     <View style={styles.container}>
       <ScrollView
@@ -165,14 +230,34 @@ const ChatScreen = () => {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.inputContainer}
       >
-        <Entypo name="emoji-happy" size={24} color="black" />
-        <TextInput
-          placeholder="Nhập tin nhắn..."
-          value={inputMessage}
-          onChangeText={setInputMessage}
-          style={styles.input}
-        />
-        <Ionicons name="send" size={24} color="black" onPress={sendMessage} />
+        <View style={styles.inputTop}>
+          {selectedImages.length > 0 ? (
+            <FlatList
+              style={styles.flatListImagesPicker}
+              data={selectedImages}
+              renderItem={renderImageItem}
+              keyExtractor={(item, index) => index.toString()}
+              horizontal={true}
+            />
+          ) : null}
+        </View>
+        <View style={styles.inputBottom}>
+          <AntDesign
+            onPress={pickImages}
+            name="picture"
+            size={24}
+            color="black"
+          />
+          {/* <Entypo name="emoji-happy" size={24} color="black" /> */}
+         
+          <TextInput
+            placeholder="Nhập tin nhắn..."
+            value={inputMessage}
+            onChangeText={setInputMessage}
+            style={styles.input}
+          />
+          <Ionicons name="send" size={24} color="black" onPress={sendMessage} />
+        </View>
       </KeyboardAvoidingView>
     </View>
   );
@@ -196,7 +281,6 @@ const styles = StyleSheet.create({
     height: 30,
     borderRadius: 15,
     borderColor: "#ccc",
-    // borderWidth: 1,
   },
   headerNavTitle: {
     fontSize: 16,
@@ -224,13 +308,7 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     backgroundColor: "#fff",
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    borderTopWidth: 1,
-    borderTopColor: "#dddddd",
+    flexDirection: "column",
   },
   input: {
     borderRadius: 18,
@@ -239,5 +317,50 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 4,
     flex: 1,
+  },
+  inputTop: {
+    flexDirection: "row",
+    gap: 5,
+  },
+  inputBottom: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    borderTopWidth: 1,
+    borderTopColor: "#dddddd",
+  },
+  flatListImagesPicker: {
+    padding: 8,
+    borderTopWidth: 1,
+    borderTopColor: "#dddddd",
+  },
+  imageItemContainer: {
+    margin: 4,
+    position: "relative",
+  },
+  imagePicker: {
+    height: 70,
+    width: 70,
+    resizeMode: "cover",
+    marginHorizontal: 2,
+    marginVertical: 2,
+    borderRadius: 8,
+  },
+  deleteIconImage: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    position: "absolute",
+    top: -5,
+    right: -5,
+    zIndex: 99,
+    height: 22,
+    width: 22,
+    backgroundColor: "#fff",
+    overflow: "hidden",
+    opacity: 0.6,
+    borderRadius: 50,
   },
 });
