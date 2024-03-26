@@ -51,7 +51,6 @@ exports.getListSentFriendRequests = async (req, res) => {
     res.status(500).json({ error: "Internal Server" });
   }
 };
-//Lấy tất cả lời mời đã nhận
 exports.getListFriends = async (req, res) => {
   try {
     const { userId } = req.params;
@@ -59,6 +58,7 @@ exports.getListFriends = async (req, res) => {
       .populate("friends", "name email image")
       .lean();
 
+      console.log(user)
     const friends = user.friends;
     res.json(friends);
   } catch (error) {
