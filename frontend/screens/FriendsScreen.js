@@ -136,12 +136,15 @@ const HomeScreen = () => {
       }
     });
     return () => {
+      socket.off("newMessage");
+      socket.off("addFriendStatus");
+      socket.off("friendRequestAccepted");
       cancelTokenSource.cancel();
     };
   }, []);
 
   return (
-    <View style={{ padding: 10 }}>
+    <View>
       {users &&
         users.map((item, index) => {
           return (

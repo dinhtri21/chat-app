@@ -17,7 +17,6 @@ const User = ({
   const isFriendRequest = friendRequests.some((user) => user._id === item._id);
   const isFriend = listFriends.some((user) => user._id === item._id);
   const navigation = useNavigation();
-
   const acceptFriend = async (currentUserId, selectedUserId) => {
     try {
       socket.emit("acceptFriend", {
@@ -60,12 +59,16 @@ const User = ({
       ) : isFriendRequest ? (
         <Pressable
           onPress={() => acceptFriend(userId, item._id)}
-          style={styles.friendBtn}
+          style={styles.friendRequestBtn}
         >
           <Text style={styles.textBtn}>Accept</Text>
         </Pressable>
       ) : isFriend ? (
-        <></>
+        <Pressable
+          style={styles.friendBtn}
+        >
+          <Text style={styles.textGrayBtn}>Friend</Text>
+        </Pressable>
       ) : isUsers ? (
         <Pressable
           onPress={() => sendFriendRequest(userId, item._id)}
@@ -87,6 +90,13 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderWidth: 0.7,
+    borderColor: "#D0D0D0",
+    // borderColor: "#000",
+    borderTopWidth: 0,
+    // backgroundColor: "#ccc"
   },
   containerInfo: { flexDirection: "row", alignItems: "center", gap: 2 },
   infoImg: {
@@ -106,7 +116,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
     borderRadius: 4,
   },
-  friendBtn: {
+  friendRequestBtn: {
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#82CD47",
@@ -114,6 +124,16 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 6,
     borderRadius: 4,
+  },
+  friendBtn: {
+    justifyContent: "center",
+    alignItems: "center",
+    width: 105,
+    paddingVertical: 6,
+    paddingHorizontal: 6,
+    borderRadius: 4,
+    borderWidth: 0.4,
+    borderColor: "#808080"
   },
   usersBtn: {
     justifyContent: "center",
@@ -125,4 +145,7 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   textBtn: { color: "#fff" },
+  textGrayBtn: {
+    color: "#808080"
+  }
 });

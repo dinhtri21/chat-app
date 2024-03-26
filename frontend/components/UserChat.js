@@ -2,34 +2,44 @@ import { Pressable, StyleSheet, Text, View, Image } from "react-native";
 import React from "react";
 import { useNavigation } from "@react-navigation/native";
 import moment from "moment";
+import { useContext } from "react";
+import { UserType } from "../UserContext";
 
 const UserChat = ({ item }) => {
+  const { userId, setUserId } = useContext(UserType);
   const navigation = useNavigation();
   // Định dạng thời gian theo múi giờ Việt Nam
   const formattedTime = moment(item.latestMessage?.timeStamp)
     .utcOffset("+0700")
     .format("HH:mm"); // Định dạng chỉ giờ: phút
-  return (
-    <Pressable
-      onPress={() => {
-        navigation.navigate("Messages", { recepientId: item._id });
-      }}
-      style={styles.containerUserChat}
-    >
-      <View style={styles.containerInfo}>
-        <Image style={styles.infoImg} source={{ uri: item.image }} />
-        <View style={{ marginLeft: 12 }}>
-          <Text style={styles.infoName}>{item?.name}</Text>
-          <Text style={styles.infoLastMessage}>
-            {item?.latestMessage?.message}
-          </Text>
+  return item.members.map((member, index) => {
+    return userId !== member._id ? (
+      <Pressable
+        key={index}
+        onPress={() => {
+          navigation.navigate("Messages", { recepientId: member._id });
+        }}
+        style={styles.containerUserChat}
+      >
+        <View style={styles.containerInfo}>
+          <Image style={styles.infoImg} source={{ uri: member.image }} />
+          <View style={styles.infoNameMessLast}>
+            <Text style={styles.infoName}>{member?.name}</Text>
+            <Text
+              ellipsizeMode="tail"
+              numberOfLines={1}
+              style={styles.infoLastMessage}
+            >
+              {member?.latestMessage?.message}
+            </Text>
+          </View>
         </View>
-      </View>
-      <View>
-        <Text style={styles.lastMessageTime}>{formattedTime}</Text>
-      </View>
-    </Pressable>
-  );
+        <View style={styles.containerLastMessageTime}>
+          <Text style={styles.lastMessageTime}>{formattedTime}</Text>
+        </View>
+      </Pressable>
+    ) : null;
+  });
 };
 
 export default UserChat;
@@ -45,12 +55,16 @@ const styles = StyleSheet.create({
     borderTopWidth: 0,
     borderLeftWidth: 0,
     borderRightWidth: 0,
-    padding: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 5,
   },
   containerInfo: {
     flexDirection: "row",
     alignItems: "center",
+    overflow: "hidden",
     gap: 1,
+    flex: 9,
+    // backgroundColor: "#ccc",
   },
   infoImg: {
     width: 50,
@@ -63,7 +77,19 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "400",
   },
-  infoLastMessage: { marginTop: 3, color: "gray" },
+  containerLastMessageTime: {
+    flex: 1,
+  },
+  infoNameMessLast: {
+    marginVertical: 12,
+    marginLeft: 12,
+    flex: 1,
+  },
+  infoLastMessage: {
+    flexWrap: "wrap",
+    marginTop: 3,
+    color: "gray",
+  },
   sentBtn: {
     justifyContent: "center",
     alignItems: "center",

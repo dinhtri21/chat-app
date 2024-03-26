@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View, ActivityIndicator } from "react-native";
 import React, { useEffect, useLayoutEffect, useState } from "react";
-import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { MaterialIcons } from "@expo/vector-icons";
 import axios, { CancelToken } from "axios";
@@ -13,7 +13,7 @@ const HomeScreeens = () => {
   const cancelTokenSource = CancelToken.source();
   const navigation = useNavigation();
   const { userId, setUserId } = useContext(UserType);
-  const [listFriends, setListFriends] = useState([]);
+  const [listGroup, setListGroup] = useState([]);
   const [processing, setProcessing] = useState(false);
 
   useEffect(() => {
@@ -39,40 +39,55 @@ const HomeScreeens = () => {
     });
   }, []);
 
-  const getListFriends = async () => {
+  const getAllGroup = async () => {
     try {
-      const res = await axios.get(
-        `${process.env.EXPRESS_API_URL}/friend/listFriends/${userId}`,
+      const response = await axios.get(
+        `${process.env.EXPRESS_API_URL}/group/getAllGroup/${userId}`,
         {
           cancelToken: cancelTokenSource.token,
         }
       );
-      if (res.status == 200) {
-        const data = res.data;
-        const updatedList = await Promise.all(
-          data.map(async (user) => {
-            // Lấy tin nhắn mới nhất cho mỗi user
-            const latestMessage = await getLatestMessage(user._id);
-            return { ...user, latestMessage };
-          })
-        );
-        // Sắp xếp danh sách theo thứ tự tin nhắn mới nhất
-        updatedList.sort((a, b) => {
-          if (!a.latestMessage) return 1; // Đẩy những user không có tin nhắn lên trên
-          if (!b.latestMessage) return -1;
-          return (
-            new Date(b.latestMessage.timeStamp) -
-            new Date(a.latestMessage.timeStamp)
-          );
-        });
-        setListFriends(updatedList);
-      } else {
-        console.log("Lỗi axios getListFriendRequests");
+      if (response.status == 200) {
+        console.log("ádjhká"+response.data);
+        setListGroup(response.data);
       }
-    } catch (err) {
-      console.log("Lỗi getListFriendRequests" + err);
+    } catch (error) {
+      console.log("Lỗi hàm getAllGroup" + error);
     }
   };
+  // const getListFriends = async () => {
+  //   try {
+  //     const res = await axios.get(
+  //       `${process.env.EXPRESS_API_URL}/friend/listFriends/${userId}`,
+  //       {
+  //         cancelToken: cancelTokenSource.token,
+  //       }
+  //     );
+  //     if (res.status == 200) {
+  //       const data = res.data;
+  //       const updatedList = await Promise.all(
+  //         data.map(async (user) => {
+  //           const latestMessage = await getLatestMessage(user._id);
+  //           return { ...user, latestMessage };
+  //         })
+  //       );
+  //       // Sắp xếp danh sách theo thứ tự tin nhắn mới nhất
+  //       await updatedList.sort((a, b) => {
+  //         if (!a.latestMessage) return 1; // Đẩy những user không có tin nhắn lên trên
+  //         if (!b.latestMessage) return -1;
+  //         return (
+  //           new Date(b.latestMessage.timeStamp) -
+  //           new Date(a.latestMessage.timeStamp)
+  //         );
+  //       });
+  //       setListFriends(updatedList);
+  //     } else {
+  //       console.log("Lỗi axios getListFriendRequests");
+  //     }
+  //   } catch (err) {
+  //     console.log("Lỗi getListFriendRequests" + err);
+  //   }
+  // };
   const getLatestMessage = async (recepientId) => {
     try {
       const res = await axios.get(
@@ -91,23 +106,57 @@ const HomeScreeens = () => {
   };
 
   useEffect(() => {
-    getListFriends();
+    // getListFriends();
+    getAllGroup();
     return () => {
       cancelTokenSource.cancel();
     };
   }, []);
+  // useFocusEffect(() => {
+  //   // Thực hiện các hành động cần thiết khi màn hình được focus (ví dụ: lấy lại danh sách nhóm)
+  //   getAllGroup();
+  
+  //   return () => {
+  //     // Clean up (nếu cần)
+  //   };
+  // }, []);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      // Thực hiện các hành động cần thiết khi màn hình được focus (ví dụ: lấy lại danh sách nhóm)
+      socket.on("newMessage", (data) => {
+        // getListFriends();
+        getAllGroup();
+      });
+      return () => {
+        // Clean up (nếu cần)
+      };
+    }, []) // Thêm getAllGroup vào danh sách dependencies
+  );
 
   useEffect(() => {
     socket.on("newMessage", (data) => {
-      getListFriends();
+      // getListFriends();
+      getAllGroup();
     });
+    socket.on("addFriendStatus", (data) => {
+      getAllGroup();
+    });
+    socket.on("friendRequestAccepted", (data) => {
+      getAllGroup();
+    });
+    return () => {
+      // socket.off("newMessage");
+      // socket.off("addFriendStatus");
+      // socket.off("friendRequestAccepted");
+    };
   }, []);
 
   return (
     <>
       <View>
-        {listFriends.map((user, index) => {
-          return <UserChat key={index} item={user} />;
+        {listGroup.map((group, index) => {
+          return <UserChat key={index} item={group} />;
         })}
       </View>
     </>
