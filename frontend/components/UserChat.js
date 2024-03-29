@@ -7,25 +7,25 @@ import { UserType } from "../UserContext";
 
 const UserChat = ({ item }) => {
   const { userId, setUserId } = useContext(UserType);
-  const [backgroundColor, setBackgroundColor] = useState("transparent");
+  // const [backgroundColor, setBackgroundColor] = useState("transparent");
   const navigation = useNavigation();
   // Định dạng thời gian theo múi giờ Việt Nam
   const formattedTime = moment(item?.latestMessage?.timeStamp)
     .utcOffset("+0700")
     .format("HH:mm"); // Định dạng chỉ giờ: phút
 
-  useEffect(() => {
-    if (item?.latestMessage?.isNew) {
-      setBackgroundColor("red");
-      const timeout = setTimeout(() => {
-        setBackgroundColor("transparent");
-      }, 1000); // Thay đổi màu sau 1 giây
-      return () => clearTimeout(timeout);
-    }
-  }, []);
-  
+  // useEffect(() => {
+  //   if (item?.latestMessage?.isNew) {
+  //     setBackgroundColor("red");
+  //     const timeout = setTimeout(() => {
+  //       setBackgroundColor("transparent");
+  //     }, 1000); // Thay đổi màu sau 1 giây
+  //     return () => clearTimeout(timeout);
+  //   }
+  // }, []);
+
   return (
-    item?.latestMessage?.message &&
+    item?.latestMessage &&
     item.members.map((member, index) => {
       return userId !== member._id ? (
         <Pressable
@@ -33,28 +33,33 @@ const UserChat = ({ item }) => {
           onPress={() => {
             navigation.navigate("Messages", { recepientId: member._id });
           }}
-          style={[
-            styles.containerUserChat,
-            { backgroundColor: backgroundColor },
-          ]}
+          style={[styles.containerUserChat]}
         >
           <View style={styles.containerInfo}>
             <Image style={styles.infoImg} source={{ uri: member.image }} />
             <View style={styles.infoNameMessLast}>
-              <Text style={styles.infoName}>{member?.name}</Text>
-              <Text
-                ellipsizeMode="tail"
-                numberOfLines={1}
-                style={styles.infoLastMessage}
-              >
-                {item?.latestMessage?.message}
-              </Text>
+              <Text style={styles.infoName}>{member.name}</Text>
+              {item.latestMessage.messageType == "text" ? (
+                <Text
+                  ellipsizeMode="tail"
+                  numberOfLines={1}
+                  style={styles.infoLastMessage}
+                >
+                  {item.latestMessage.message}
+                </Text>
+              ) : item.latestMessage.messageType == "image" ? (
+                <Text
+                  ellipsizeMode="tail"
+                  numberOfLines={1}
+                  style={styles.infoLastMessage}
+                >
+                  [Hình ảnh]
+                </Text>
+              ) : null}
             </View>
           </View>
           <View style={styles.containerLastMessageTime}>
-            <Text style={styles.lastMessageTime}>
-              {item?.latestMessage?.message && formattedTime}
-            </Text>
+            <Text style={styles.lastMessageTime}>{formattedTime}</Text>
           </View>
         </Pressable>
       ) : null;

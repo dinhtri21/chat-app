@@ -8,6 +8,7 @@ import { UserType } from "../UserContext";
 import { useContext } from "react";
 import UserChat from "../components/UserChat";
 import { socket } from "../socket";
+import { AntDesign } from "@expo/vector-icons";
 
 const HomeScreeens = () => {
   const cancelTokenSource = CancelToken.source();
@@ -22,16 +23,16 @@ const HomeScreeens = () => {
       headerLeft: () => <Text style={styles.headerNavTitle}>Home Chat</Text>,
       headerRight: () => (
         <View style={styles.containerIconLeft}>
-          <Ionicons
+          <AntDesign
             onPress={() => navigation.navigate("Chats")}
-            name="chatbox-ellipses-outline"
-            size={24}
+            name="addusergroup"
+            size={26}
             color="black"
           />
           <MaterialIcons
             onPress={() => navigation.navigate("Friends")}
             name="people-outline"
-            size={24}
+            size={28}
             color="black"
           />
         </View>
@@ -56,7 +57,9 @@ const HomeScreeens = () => {
             await Promise.all(
               group.members.map(async (member) => {
                 if (member._id != userId) {
-                  latestMessage = await getLatestMessage(group, member._id);
+                  //Lấy ra member khác userId để tìm tin nhắn
+                  const recepientId = member._id;
+                  latestMessage = await getLatestMessage(group, recepientId);
                 }
               })
             );
@@ -67,9 +70,8 @@ const HomeScreeens = () => {
         updatedList.sort((a, b) => {
           const latestMessageA = a.latestMessage;
           const latestMessageB = b.latestMessage;
-
-          if (!latestMessageA) return 1; // Đẩy những nhóm không có tin nhắn lên trên
-          if (!latestMessageB) return -1;
+          if (!latestMessageA) return 1; // Đẩy những nhóm A có tin nhắn lên trên
+          if (!latestMessageB) return -1; // Đẩy những nhóm B không có tin nhắn xuống dưới
           return (
             new Date(latestMessageB.timeStamp) -
             new Date(latestMessageA.timeStamp)
@@ -78,7 +80,7 @@ const HomeScreeens = () => {
         setListGroup(updatedList);
       }
     } catch (error) {
-      console.log("Lỗi hàm getAllGroup" + error);
+      console.log("Lỗi hàm getAllGroup -- " + error);
     }
   };
   const getLatestMessage = async (group, recepientId) => {
@@ -89,31 +91,31 @@ const HomeScreeens = () => {
           cancelToken: cancelTokenSource.token,
         }
       );
-      if (res.status === 200) {
-        const newMessage = res.data.message;
-        const currentGroup = listGroup.find(
-          (item) => item.group === group.group
-        ); // Tìm nhóm trong listGroup
 
-        if (currentGroup) {
-          const currentLatestMessage = currentGroup.latestMessage;
-          // So sánh thời gian của tin nhắn mới nhất và tin nhắn mới nhận được
-          if (
-            currentLatestMessage &&
-            new Date(newMessage.timeStamp) >
-              new Date(currentLatestMessage.timeStamp)
-          ) {
-            return { ...newMessage, isNew: true };
-          }
-        }
-        return { ...newMessage, isNew: false };
+      if (res.status === 200) {
+        const newMessage = res.data.messages;
+        return newMessage;
+        // const currentGroup = listGroup.find(
+        //   (item) => item.group === group.group
+        // ); // Tìm nhóm trong listGroup
+        // if (currentGroup && currentGroup.latestMessage) {
+        //   // So sánh thời gian của tin nhắn mới nhất và tin nhắn mới nhận được
+        //   const latestMessage = currentGroup.latestMessage;
+        //   if (
+        //     latestMessage &&
+        //     new Date(newMessage.timeStamp) >
+        //       new Date(latestMessage.timeStamp)
+        //   ) {
+        //     return { ...newMessage, isNew: true };
+        //   }
+        // }
+        // return { ...newMessage, isNew: false };
       }
     } catch (err) {
       console.log("Lỗi getLatestMessage: " + err);
     }
     return null;
   };
-
   useEffect(() => {
     getAllGroup();
     return () => {
@@ -126,32 +128,11 @@ const HomeScreeens = () => {
       socket.on("newMessage", (data) => {
         getAllGroup();
       });
-      socket.on("addFriendStatus", (data) => {
-        getAllGroup();
-      });
-      return () => {};
+      return () => {
+        // cancelTokenSource.cancel();
+      };
     }, [])
   );
-
-  useEffect(() => {
-    socket.on("newMessage", (data) => {
-      // getListFriends();
-      getAllGroup();
-    });
-    socket.on("addFriendStatus", (data) => {
-      getAllGroup();
-    });
-    socket.on("friendRequestAccepted", (data) => {
-      getAllGroup();
-    });
-    return () => {
-      cancelTokenSource.cancel();
-      // socket.off("newMessage");
-      // socket.off("addFriendStatus");
-      // socket.off("friendRequestAccepted");
-    };
-  }, []);
-
   return (
     <>
       <View>
@@ -167,5 +148,5 @@ export default HomeScreeens;
 
 const styles = StyleSheet.create({
   headerNavTitle: { fontSize: 16, fontWeight: "bold" },
-  containerIconLeft: { flexDirection: "row", alignItems: "center", gap: 8 },
+  containerIconLeft: { flexDirection: "row", alignItems: "center", gap: 10 },
 });

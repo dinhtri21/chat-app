@@ -28,6 +28,10 @@ import { socket } from "../socket";
 import { AntDesign } from "@expo/vector-icons";
 import { EvilIcons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
+import * as FileSystem from "expo-file-system";
+import { Dimensions } from "react-native";
+var width = Dimensions.get("window").width; //full width
+var height = Dimensions.get("window").height; //full height
 
 const ChatScreen = () => {
   const route = useRoute();
@@ -104,15 +108,54 @@ const ChatScreen = () => {
   };
 
   const sendMessage = async () => {
-    if (inputMessage.trim() !== "") {
-      // Gửi tin nhắn thông qua socket
+    console.log(selectedImages.length);
+    if (selectedImages.length > 0) {
+      for (let i = 0; i < selectedImages.length; i++) {
+        const imageData = selectedImages[i];
+        await sendImageMessage(imageData); // Gửi ảnh
+      }
+      sendTextMessage();
+    } else {
+      sendTextMessage();
+    }
+  };
+
+  const sendImageMessage = async (imageData) => {
+    try {
+      const imageBase64 = await FileSystem.readAsStringAsync(imageData.uri, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
       socket.emit("sendMessage", {
         senderId: userId,
         recepientId: recepientId,
-        message: inputMessage.trim(),
+        messageType: "image",
+        message: "",
+        imageBase64: imageBase64,
+        mimeType: imageData.mimeType, // Dữ liệu ảnh ở dạng base64
         timeStamp: new Date().toISOString(),
       });
-      setInputMessage("");
+      setSelectedImages([]);
+    } catch (error) {
+      console.error("Error sending image message:", error);
+    }
+  };
+
+  const sendTextMessage = async () => {
+    try {
+      if (inputMessage.trim() !== "") {
+        socket.emit("sendMessage", {
+          senderId: userId,
+          recepientId: recepientId,
+          messageType: "text",
+          message: inputMessage.trim(),
+          imageBase64: "",
+          mimeType: "",
+          timeStamp: new Date().toISOString(),
+        });
+        setInputMessage("");
+      }
+    } catch (error) {
+      console.log("Lỗi khi gửi tin nhắn văn bản:", error);
     }
   };
 
@@ -125,12 +168,26 @@ const ChatScreen = () => {
         style={[
           styles.messageBubble,
           { alignSelf: isUserMessage ? "flex-end" : "flex-start" },
-          { backgroundColor: isUserMessage ? "#4a86f7" : "#fff" },
         ]}
       >
-        <Text style={{ color: isUserMessage ? "#fff" : "#000" }}>
-          {message.message}
-        </Text>
+        {message.messageType == "text" ? (
+          <Text
+            style={{
+              color: isUserMessage ? "#fff" : "#000",
+              backgroundColor: isUserMessage ? "#4a86f7" : "#fff",
+              ...styles.imageText,
+            }}
+          >
+            {message.message}
+          </Text>
+        ) : message.messageType == "image" ? (
+          <View style={styles.imageMessage}>
+            <Image
+              style={styles.imageMessageSrc}
+              source={{ uri: message?.imageUrl }}
+            />
+          </View>
+        ) : null}
       </View>
     );
   };
@@ -159,13 +216,11 @@ const ChatScreen = () => {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsMultipleSelection: true,
-      // allowsEditing: true,
       quality: 1,
     });
-
-    if (!result.cancelled) {
+    if (!result.cancelled && result.assets) {
       const newSelectedImages = result.assets.map((image) => {
-        return image.uri;
+        return image;
       });
       setSelectedImages((prevImages) => [...prevImages, ...newSelectedImages]);
     }
@@ -187,13 +242,13 @@ const ChatScreen = () => {
             color="black"
           />
         </Pressable>
-        <Image source={{ uri: item }} style={styles.imagePicker} />
+        <Image source={{ uri: item.uri }} style={styles.imagePicker} />
       </View>
     );
   };
   const handleDeleteImage = (item) => {
     const updatedImages = selectedImages.filter(
-      (imageUri) => item !== imageUri
+      (imageUri) => item.uri !== imageUri.uri
     );
     setSelectedImages(updatedImages);
   };
@@ -209,11 +264,11 @@ const ChatScreen = () => {
 
   useEffect(() => {
     socket.on("newMessage", (data) => {
+      console.log(data);
       setMessages((prevMessages) => [...prevMessages, data.message]);
     });
   }, []);
 
-  
   return (
     <View style={styles.container}>
       <ScrollView
@@ -249,7 +304,7 @@ const ChatScreen = () => {
             color="black"
           />
           {/* <Entypo name="emoji-happy" size={24} color="black" /> */}
-         
+
           <TextInput
             placeholder="Nhập tin nhắn..."
             value={inputMessage}
@@ -274,13 +329,12 @@ const styles = StyleSheet.create({
   headerInfo: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 4,
+    gap: 8,
   },
   headerInfoImage: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    borderColor: "#ccc",
+    width: 35,
+    height: 35,
+    borderRadius: 35,
   },
   headerNavTitle: {
     fontSize: 16,
@@ -298,13 +352,24 @@ const styles = StyleSheet.create({
     flexGrow: 1, // Kích thước nội dung tăng dần để cho phép cuộn
     justifyContent: "flex-end", // Đảm bảo tin nhắn mới luôn nằm ở cuối
   },
-  messageBubble: {
+  messageBubble: {},
+
+  imageMessage: {
+    marginVertical: 10,
+    marginHorizontal: 18,
+    borderRadius: 4,
+  },
+  imageMessageSrc: {
+    resizeMode: "cover",
+    width: 200,
+    height: 200,
+    borderRadius: 10,
+  },
+  imageText: {
     padding: 10,
     marginVertical: 10,
     marginHorizontal: 18,
     borderRadius: 16,
-    backgroundColor: "#fff",
-    alignSelf: "flex-start",
   },
   inputContainer: {
     backgroundColor: "#fff",
