@@ -37,21 +37,28 @@ exports.addFriend = async (data, socket, io) => {
     receiver.friendRequests.push(data.senderId);
     await receiver.save();
 
-    // Tạo nhóm mới và thêm người dùng và bạn bè vào nhóm đó
-    const newGroup = await Group.create({
-      name: "Group_" + sender._id + "_" + receiver._id,
-      members: [sender._id, receiver._id],
+    const commonGroup = await Group.findOne({
+      members: { $all: [sender, receiver] },
     });
-    sender.groups.push(newGroup._id);
-    receiver.groups.push(newGroup._id);
-    await sender.save();
-    await receiver.save();
+    if (!commonGroup) {
+      // Tạo nhóm mới và thêm người dùng và bạn bè vào nhóm đó
+      const newGroup = await Group.create({
+        name: "Group_" + sender._id + "_" + receiver._id,
+        members: [sender._id, receiver._id],
+      });
+      sender.groups.push(newGroup._id);
+      receiver.groups.push(newGroup._id);
+      await sender.save();
+      await receiver.save();
 
-    // Thêm người dùng vào nhóm trên socket
-    socket.join(newGroup._id.toString());
-
-    // Gửi thông báo
-    io.to(newGroup._id.toString()).emit("addFriendStatus", { success: true });
+      socket.join(newGroup._id.toString());
+      io.to(newGroup._id.toString()).emit("addFriendStatus", { success: true });
+    } else {
+      socket.join(commonGroup._id.toString());
+      io.to(commonGroup._id.toString()).emit("addFriendStatus", {
+        success: true,
+      });
+    }
   } catch (error) {
     console.error("Error sending friend request:", error);
     socket.emit("addFriendStatus", {

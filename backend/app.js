@@ -4,9 +4,10 @@ require("dotenv").config(); //biến môi trường
 const userRouter = require("./routers/userRoute");
 const friendRouter = require("./routers/friendRouter");
 const messages = require("./routers/messages");
-const group = require("./routers/groupRouter")
+const group = require("./routers/groupRouter");
 const cors = require("cors");
 const app = express();
+const path = require("path");
 //socket io
 const http = require("http");
 const server = http.createServer(app);
@@ -34,13 +35,13 @@ io.on("connection", (socket) => {
   });
   socket.on("disconnect", async () => {
     console.log("user disconnected");
-    
   });
 });
 
 // Middleware logging
 app.use(logger("dev"));
-
+// app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use(express.static(path.join(__dirname, "uploads")));
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

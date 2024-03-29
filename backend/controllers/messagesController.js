@@ -12,7 +12,17 @@ exports.getMessages = async (req, res) => {
         ],
       })
       .sort({ timeStamp: 1 }); // Sắp xếp theo thời gian tăng dần
-    res.status(200).json({ messages });
+
+    if (messages && messages.length > 0) {
+      messages.forEach((message) => {
+        if (message.messageType === "image") {
+          message.imageUrl = `${process.env.IMG_URL}/${message.imageUrl}`;
+        }
+      });
+      res.status(200).json({ messages: messages });
+    } else {
+      res.status(200).json({ messages: messages });
+    }
   } catch (error) {
     console.error("Error fetching messages:", error);
     res.status(500).json({ error: "Server error" });
@@ -30,8 +40,16 @@ exports.getLatestMessage = async (req, res) => {
       })
       .sort({ timeStamp: -1 });
 
-    console.log("run" + userId + recepientId);
-    res.status(200).json({ message: latestMessage });
+    console.log(latestMessage);
+    if (latestMessage && latestMessage.messageType == "image") {
+      console.log("abc");
+      latestMessage.imageUrl = `${process.env.IMG_URL}/${latestMessage.imageUrl}`;
+      res.status(200).json({ messages: latestMessage });
+    } else if (latestMessage && latestMessage.messageType == "text") {
+      res.status(200).json({ messages: latestMessage });
+    } else {
+      res.status(200).json({ messages: null });
+    }
   } catch (error) {
     console.error("Lỗi khi lấy tin nhắn mới nhất:", error);
     res
