@@ -46,7 +46,18 @@ const User = ({
       style={styles.containerUser}
     >
       <View style={styles.containerInfo}>
-        <Image style={styles.infoImg} source={{ uri: item.image }} />
+        {/* <Image style={styles.infoImg} source={{ uri: item.image }} /> */}
+        {item.image ? (
+          <Image
+            style={styles.infoImg}
+            source={{ uri: item.image }}
+          />
+        ) : (
+          <Image
+            style={styles.infoImg}
+            source={require("../assets/default-profile-picture-avatar.jpg")}
+          />
+        )}
         <View style={{ marginLeft: 12 }}>
           <Text style={styles.infoName}>{item?.name}</Text>
           <Text style={styles.infoEmail}>{item?.email}</Text>
@@ -64,9 +75,7 @@ const User = ({
           <Text style={styles.textBtn}>Accept</Text>
         </Pressable>
       ) : isFriend ? (
-        <Pressable
-          style={styles.friendBtn}
-        >
+        <Pressable style={styles.friendBtn}>
           <Text style={styles.textGrayBtn}>Friend</Text>
         </Pressable>
       ) : isUsers ? (
@@ -133,7 +142,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
     borderRadius: 4,
     borderWidth: 0.4,
-    borderColor: "#808080"
+    borderColor: "#808080",
   },
   usersBtn: {
     justifyContent: "center",
@@ -146,6 +155,6 @@ const styles = StyleSheet.create({
   },
   textBtn: { color: "#fff" },
   textGrayBtn: {
-    color: "#808080"
-  }
+    color: "#808080",
+  },
 });

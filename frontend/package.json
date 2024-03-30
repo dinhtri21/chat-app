@@ -30,7 +30,8 @@
     "react-native-screens": "^3.29.0",
     "socket.io": "^4.7.4",
     "socket.io-client": "^4.7.4",
-    "expo-file-system": "~16.0.8"
+    "expo-file-system": "~16.0.8",
+    "expo-image-manipulator": "~11.8.0"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

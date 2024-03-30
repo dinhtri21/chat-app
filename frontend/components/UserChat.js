@@ -14,16 +14,6 @@ const UserChat = ({ item }) => {
     .utcOffset("+0700")
     .format("HH:mm"); // Định dạng chỉ giờ: phút
 
-  // useEffect(() => {
-  //   if (item?.latestMessage?.isNew) {
-  //     setBackgroundColor("red");
-  //     const timeout = setTimeout(() => {
-  //       setBackgroundColor("transparent");
-  //     }, 1000); // Thay đổi màu sau 1 giây
-  //     return () => clearTimeout(timeout);
-  //   }
-  // }, []);
-
   return (
     item?.latestMessage &&
     item.members.map((member, index) => {
@@ -36,7 +26,11 @@ const UserChat = ({ item }) => {
           style={[styles.containerUserChat]}
         >
           <View style={styles.containerInfo}>
-            <Image style={styles.infoImg} source={{ uri: member.image }} />
+            <Image
+              defaultSource={require("../assets/default-profile-picture-avatar.jpg")}
+              style={styles.infoImg}
+              source={{ uri: member.image }}
+            />
             <View style={styles.infoNameMessLast}>
               <Text style={styles.infoName}>{member.name}</Text>
               {item.latestMessage.messageType == "text" ? (

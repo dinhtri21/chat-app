@@ -119,7 +119,7 @@ const Login = () => {
   };
 
   useEffect(() => {
-   checkToken()
+  // checkToken()
     return () => {
       cancelTokenSource.cancel();
     };

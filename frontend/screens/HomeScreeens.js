@@ -57,7 +57,6 @@ const HomeScreeens = () => {
             await Promise.all(
               group.members.map(async (member) => {
                 if (member._id != userId) {
-                  //Lấy ra member khác userId để tìm tin nhắn
                   const recepientId = member._id;
                   latestMessage = await getLatestMessage(group, recepientId);
                 }
@@ -95,27 +94,13 @@ const HomeScreeens = () => {
       if (res.status === 200) {
         const newMessage = res.data.messages;
         return newMessage;
-        // const currentGroup = listGroup.find(
-        //   (item) => item.group === group.group
-        // ); // Tìm nhóm trong listGroup
-        // if (currentGroup && currentGroup.latestMessage) {
-        //   // So sánh thời gian của tin nhắn mới nhất và tin nhắn mới nhận được
-        //   const latestMessage = currentGroup.latestMessage;
-        //   if (
-        //     latestMessage &&
-        //     new Date(newMessage.timeStamp) >
-        //       new Date(latestMessage.timeStamp)
-        //   ) {
-        //     return { ...newMessage, isNew: true };
-        //   }
-        // }
-        // return { ...newMessage, isNew: false };
       }
     } catch (err) {
       console.log("Lỗi getLatestMessage: " + err);
     }
     return null;
   };
+
   useEffect(() => {
     getAllGroup();
     return () => {
@@ -126,10 +111,11 @@ const HomeScreeens = () => {
   useFocusEffect(
     React.useCallback(() => {
       socket.on("newMessage", (data) => {
+        // getLatestMessageUser(data);
         getAllGroup();
       });
       return () => {
-        // cancelTokenSource.cancel();
+        //  cancelTokenSource.cancel();
       };
     }, [])
   );

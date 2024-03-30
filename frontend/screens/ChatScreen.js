@@ -58,10 +58,21 @@ const ChatScreen = () => {
             color="black"
           />
           <View style={styles.headerInfo}>
-            <Image
+          { recepientData?.image ? (
+          <Image
+             style={styles.headerInfoImage}
+              source={{ uri: recepientData?.image }}
+          />
+        ) : (
+          <Image
+             style={styles.headerInfoImage}
+            source={require("../assets/default-profile-picture-avatar.jpg")}
+          />
+        )}
+            {/* <Image
               style={styles.headerInfoImage}
               source={{ uri: recepientData?.image }}
-            />
+            /> */}
             <Text style={styles.headerNavTitle}>{recepientData?.name}</Text>
           </View>
         </View>
@@ -81,9 +92,7 @@ const ChatScreen = () => {
       if (res.status == 200) {
         const data = res.data.user;
         setRecepientData(data);
-      } else {
-        console.log(res);
-      }
+      } 
     } catch (error) {
       console.log("Lỗi hàm fetchRecepientData: ", error);
     }
@@ -99,16 +108,13 @@ const ChatScreen = () => {
       );
       if (response.status === 200) {
         setMessages(response.data.messages);
-      } else {
-        console.log(response);
-      }
+      } 
     } catch (error) {
       console.log("Lỗi hàm fetchMessages:", error);
     }
   };
 
   const sendMessage = async () => {
-    console.log(selectedImages.length);
     if (selectedImages.length > 0) {
       for (let i = 0; i < selectedImages.length; i++) {
         const imageData = selectedImages[i];
@@ -264,7 +270,6 @@ const ChatScreen = () => {
 
   useEffect(() => {
     socket.on("newMessage", (data) => {
-      console.log(data);
       setMessages((prevMessages) => [...prevMessages, data.message]);
     });
   }, []);
