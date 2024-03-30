@@ -39,10 +39,7 @@ exports.getLatestMessage = async (req, res) => {
         ],
       })
       .sort({ timeStamp: -1 });
-
-    console.log(latestMessage);
     if (latestMessage && latestMessage.messageType == "image") {
-      console.log("abc");
       latestMessage.imageUrl = `${process.env.IMG_URL}/${latestMessage.imageUrl}`;
       res.status(200).json({ messages: latestMessage });
     } else if (latestMessage && latestMessage.messageType == "text") {

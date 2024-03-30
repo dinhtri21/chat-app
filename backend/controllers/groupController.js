@@ -12,7 +12,8 @@ exports.getAllGroup = async (req, res) => {
           path: "members",
           select: "name email image", // Chỉ lấy các trường name, email, image của thành viên
         })
-        .select("name members");
+        .select("name members")
+        .lean();
       return {
         group: groupWithMembers.name,
         members: groupWithMembers.members,
@@ -21,7 +22,14 @@ exports.getAllGroup = async (req, res) => {
 
     const groupMembers = await Promise.all(groupMembersPromises);
 
-    res.status(200).json(groupMembers);
+    const groupMembersAddHostImage = await groupMembers.map((group) => {
+      const addHostImage = group.members.map((member) => {
+        return { ...member, image: `${process.env.IMG_URL}/${member.image}` };
+      });
+      return { ...group, members: addHostImage };
+    });
+
+    res.status(200).json(groupMembersAddHostImage);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Internal server error" });

@@ -29,7 +29,11 @@ exports.getListFriendRequests = async (req, res) => {
 
     const friendRequests = user.friendRequests;
 
-    res.json(friendRequests);
+    const friendRequestsAddHostImg = friendRequests.map((user) => {
+      return { ...user, image: `${process.env.IMG_URL}/${user.image}` };
+    });
+
+    res.status(200).json(friendRequestsAddHostImg);
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "Internal Server Error" });
@@ -45,7 +49,11 @@ exports.getListSentFriendRequests = async (req, res) => {
 
     const sentFriendRequests = user.sentFriendRequests;
 
-    res.json(sentFriendRequests);
+    const sentFriendRequestsAddHost = await sentFriendRequests.map((friend) => {
+      return { ...friend, image: `${process.env.IMG_URL}/${friend.image}` };
+    });
+
+    res.status(200).json(sentFriendRequestsAddHost);
   } catch (error) {
     console.log("error", error);
     res.status(500).json({ error: "Internal Server" });
@@ -58,9 +66,13 @@ exports.getListFriends = async (req, res) => {
       .populate("friends", "name email image")
       .lean();
 
-      console.log(user)
     const friends = user.friends;
-    res.json(friends);
+
+    const listFriendsAddHost = await friends.map((friend) => {
+      return { ...friend, image: `${process.env.IMG_URL}/${friend.image}` };
+    });
+
+    res.json(listFriendsAddHost);
   } catch (error) {
     console.log("error", error);
     res.status(500).json({ error: "Internal Server" });
