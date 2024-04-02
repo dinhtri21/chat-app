@@ -24,7 +24,7 @@ exports.getAllGroup = async (req, res) => {
 
     const groupMembersAddHostImage = await groupMembers.map((group) => {
       const addHostImage = group.members.map((member) => {
-        return { ...member, image: `${process.env.IMG_URL}/${member.image}` };
+        return { ...member, image: `${process.env.IMG_URL}/avatar/${member.image}` };
       });
       return { ...group, members: addHostImage };
     });

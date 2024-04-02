@@ -3,6 +3,9 @@ const message = require("../models/message");
 exports.getMessages = async (req, res) => {
   try {
     const { senderId, recepientId } = req.params;
+    const { offset, limit } = req.query;
+
+    console.log(req.query);
 
     const messages = await message
       .find({
@@ -11,7 +14,9 @@ exports.getMessages = async (req, res) => {
           { senderId: recepientId, recepientId: senderId },
         ],
       })
-      .sort({ timeStamp: 1 }); // Sắp xếp theo thời gian tăng dần
+      .sort({ timeStamp: -1 })
+      .skip(parseInt(offset))
+      .limit(parseInt(limit)); // Sắp xếp theo thời gian tăng dần
 
     if (messages && messages.length > 0) {
       messages.forEach((message) => {
@@ -19,9 +24,23 @@ exports.getMessages = async (req, res) => {
           message.imageUrl = `${process.env.IMG_URL}/${message.imageUrl}`;
         }
       });
-      res.status(200).json({ messages: messages });
+      // res.status(200).json({ messages: messages });
+      // Sắp xếp lại dữ liệu theo thời gian tăng dần
+      const sortedMessages = messages.sort(
+        (a, b) => new Date(a.timeStamp) - new Date(b.timeStamp)
+      );
+
+      // Gửi dữ liệu đã sắp xếp cho client
+      res.status(200).json({ messages: sortedMessages });
     } else {
-      res.status(200).json({ messages: messages });
+      // res.status(200).json({ messages: messages });
+      // Sắp xếp lại dữ liệu theo thời gian tăng dần
+      const sortedMessages = messages.sort(
+        (a, b) => new Date(a.timeStamp) - new Date(b.timeStamp)
+      );
+
+      // Gửi dữ liệu đã sắp xếp cho client
+      res.status(200).json({ messages: sortedMessages });
     }
   } catch (error) {
     console.error("Error fetching messages:", error);

@@ -14,7 +14,7 @@ const server = http.createServer(app);
 const { Server } = require("socket.io");
 const io = new Server(server);
 
-const { addFriend, acceptFriend } = require("./sockets/friendSocket");
+const { addFriend, acceptFriend, joinGroup } = require("./sockets/friendSocket");
 const { login } = require("./sockets/userSocket");
 const { sendMessage } = require("./sockets/messageSocket");
 // addFriend(io);
@@ -32,6 +32,9 @@ io.on("connection", (socket) => {
   });
   socket.on("acceptFriend", (data) => {
     acceptFriend(data, socket, io);
+  });
+  socket.on("joinGroup", (data) => {
+    joinGroup(data, socket, io);
   });
   socket.on("disconnect", async () => {
     console.log("user disconnected");

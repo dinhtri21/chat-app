@@ -30,7 +30,7 @@ exports.getListFriendRequests = async (req, res) => {
     const friendRequests = user.friendRequests;
 
     const friendRequestsAddHostImg = friendRequests.map((user) => {
-      return { ...user, image: `${process.env.IMG_URL}/${user.image}` };
+      return { ...user, image: `${process.env.IMG_URL}/avatar/${user.image}` };
     });
 
     res.status(200).json(friendRequestsAddHostImg);
@@ -50,7 +50,7 @@ exports.getListSentFriendRequests = async (req, res) => {
     const sentFriendRequests = user.sentFriendRequests;
 
     const sentFriendRequestsAddHost = await sentFriendRequests.map((friend) => {
-      return { ...friend, image: `${process.env.IMG_URL}/${friend.image}` };
+      return { ...friend, image: `${process.env.IMG_URL}/avatar/${friend.image}` };
     });
 
     res.status(200).json(sentFriendRequestsAddHost);
@@ -69,7 +69,7 @@ exports.getListFriends = async (req, res) => {
     const friends = user.friends;
 
     const listFriendsAddHost = await friends.map((friend) => {
-      return { ...friend, image: `${process.env.IMG_URL}/${friend.image}` };
+      return { ...friend, image: `${process.env.IMG_URL}/avatar/${friend.image}` };
     });
 
     res.json(listFriendsAddHost);

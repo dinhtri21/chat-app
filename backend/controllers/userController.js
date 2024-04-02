@@ -4,12 +4,12 @@ const bcrypt = require("bcrypt");
 const path = require("path");
 const fs = require("fs");
 
-const saveBase64Image = (base64String, mimeType) => {
+const saveBase64Image = (imageBase64, mimeType) => {
   try {
     let type = mimeType.split("/");
     const fileName = `${(new Date().getTime() / 1000) | 0}.${type[1]}`;
     const imagePath = path.join(__dirname, "../uploads/avatar/") + fileName;
-    fs.writeFileSync(imagePath, base64String, { encoding: "base64" });
+    fs.writeFileSync(imagePath, imageBase64, { encoding: "base64" });
     return fileName; // Trả về tên file đã lưu
   } catch (error) {
     console.error("Error saving base64 image:", error);
@@ -85,7 +85,7 @@ exports.getAllUsers = async (req, res) => {
 
     const Users = await usersData.map((item) => {
       if (item.image) {
-        return { ...item, image: `${process.env.IMG_URL}/${item.image}` };
+        return { ...item, image: `${process.env.IMG_URL}/avatar/${item.image}` };
       }
       return item;
     });
@@ -101,7 +101,7 @@ exports.getUserByID = async (req, res) => {
     const userId = req.params.userId;
     const user = await User.findById(userId);
     if (user.image) {
-      user.image = `${process.env.IMG_URL}/${user.image}`;
+      user.image = `${process.env.IMG_URL}/avatar/${user.image}`;
     }
     if (!user) {
       return res.status(404).json({ error: "Không tìm thấy người dùng!" });

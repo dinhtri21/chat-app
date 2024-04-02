@@ -1,5 +1,12 @@
 const User = require("../models/user");
 const Group = require("../models/group");
+exports.joinGroup = async (data, socket, io) => {
+  try {
+    socket.join(data.groupId);
+  } catch (error) {
+    console.log("Lỗi hàm joinGroup socket io: " + error);
+  }
+};
 exports.addFriend = async (data, socket, io) => {
   try {
     console.log(
@@ -41,7 +48,7 @@ exports.addFriend = async (data, socket, io) => {
       members: { $all: [sender, receiver] },
     });
     if (!commonGroup) {
-      // Tạo nhóm mới và thêm người dùng và bạn bè vào nhóm đó
+      // Tạo một document mới và lưu nó trực tiếp vào CSDL thay vì new phải dùng save
       const newGroup = await Group.create({
         name: "Group_" + sender._id + "_" + receiver._id,
         members: [sender._id, receiver._id],
@@ -52,7 +59,20 @@ exports.addFriend = async (data, socket, io) => {
       await receiver.save();
 
       socket.join(newGroup._id.toString());
-      io.to(newGroup._id.toString()).emit("addFriendStatus", { success: true });
+      io.to(newGroup._id.toString()).emit("addFriendStatus", {
+        success: true,
+        groupId: newGroup._id.toString(),
+        senderId: sender._id,
+        receiverId: receiver._id,
+      });
+      io.emit("addFriendStatus", {
+        sender: sender._id,
+        success: true,
+        groupId: newGroup._id.toString(),
+        senderId: sender._id,
+
+        receiverId: receiver._id,
+      });
     } else {
       socket.join(commonGroup._id.toString());
       io.to(commonGroup._id.toString()).emit("addFriendStatus", {
