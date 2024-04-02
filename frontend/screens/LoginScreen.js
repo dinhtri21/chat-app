@@ -11,7 +11,6 @@ import {
   ActivityIndicator,
 } from "react-native";
 import React, { useEffect, useState } from "react";
-import { Dimensions } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import axios, { CancelToken } from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -20,6 +19,7 @@ import { decode } from "base-64";
 import { useContext } from "react";
 import { socket } from "../socket";
 
+import { Dimensions } from "react-native";
 var width = Dimensions.get("window").width; //full width
 var height = Dimensions.get("window").height; //full height
 
@@ -119,7 +119,7 @@ const Login = () => {
   };
 
   useEffect(() => {
-  // checkToken()
+  //  checkToken()
     return () => {
       cancelTokenSource.cancel();
     };

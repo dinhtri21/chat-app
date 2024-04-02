@@ -16,7 +16,7 @@ const UserChat = ({ item }) => {
 
   return (
     item?.latestMessage &&
-    item.members.map((member, index) => {
+    item?.members.map((member, index) => {
       return userId !== member._id ? (
         <Pressable
           key={index}

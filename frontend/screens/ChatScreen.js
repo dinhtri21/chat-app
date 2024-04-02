@@ -10,6 +10,7 @@ import {
   Platform,
   Pressable,
   FlatList,
+  RefreshControl,
 } from "react-native";
 
 import React, {
@@ -45,6 +46,10 @@ const ChatScreen = () => {
   const scrollViewRef = useRef();
   const [selectedImages, setSelectedImages] = useState([]);
   const [isOpen, setIsOpen] = useState(false); // State để hiển thị emoji picker
+  const [offset, setOffset] = useState(0);
+  const limit = 16; // Số lượng tin nhắn muốn load mỗi lần
+  const [isEndMessage, setIsEndMessage] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     navigation.setOptions({
@@ -58,17 +63,17 @@ const ChatScreen = () => {
             color="black"
           />
           <View style={styles.headerInfo}>
-          { recepientData?.image ? (
-          <Image
-             style={styles.headerInfoImage}
-              source={{ uri: recepientData?.image }}
-          />
-        ) : (
-          <Image
-             style={styles.headerInfoImage}
-            source={require("../assets/default-profile-picture-avatar.jpg")}
-          />
-        )}
+            {recepientData?.image ? (
+              <Image
+                style={styles.headerInfoImage}
+                source={{ uri: recepientData?.image }}
+              />
+            ) : (
+              <Image
+                style={styles.headerInfoImage}
+                source={require("../assets/default-profile-picture-avatar.jpg")}
+              />
+            )}
             {/* <Image
               style={styles.headerInfoImage}
               source={{ uri: recepientData?.image }}
@@ -92,7 +97,7 @@ const ChatScreen = () => {
       if (res.status == 200) {
         const data = res.data.user;
         setRecepientData(data);
-      } 
+      }
     } catch (error) {
       console.log("Lỗi hàm fetchRecepientData: ", error);
     }
@@ -104,13 +109,38 @@ const ChatScreen = () => {
         `${process.env.EXPRESS_API_URL}/messages/getMessages/${userId}/${recepientId}`,
         {
           cancelToken: cancelTokenSource.token,
+          params: { offset, limit },
         }
       );
       if (response.status === 200) {
-        setMessages(response.data.messages);
-      } 
+        return response.data.messages;
+      }
     } catch (error) {
       console.log("Lỗi hàm fetchMessages:", error);
+    }
+  };
+
+  const loadInitialMessages = async () => {
+    const newMessages = await fetchMessages();
+    if (newMessages) {
+      await setMessages(newMessages);
+      await setOffset(offset + newMessages.length);
+    }
+  };
+  // Load thêm tin nhắn
+  const loadMoreMessages = async () => {
+    const newMessages = await fetchMessages(offset, limit);
+    if (newMessages.length == 0) {
+      setOffset(offset + newMessages.length);
+      setIsEndMessage(true);
+      setRefreshing(false);
+
+      return;
+    }
+    if (newMessages) {
+      setMessages([...newMessages, ...messages]);
+      setOffset(offset + newMessages.length);
+      setRefreshing(false);
     }
   };
 
@@ -137,7 +167,7 @@ const ChatScreen = () => {
         messageType: "image",
         message: "",
         imageBase64: imageBase64,
-        mimeType: imageData.mimeType, // Dữ liệu ảnh ở dạng base64
+        mimeType: imageData.mimeType,
         timeStamp: new Date().toISOString(),
       });
       setSelectedImages([]);
@@ -197,14 +227,23 @@ const ChatScreen = () => {
       </View>
     );
   };
+
   // Cuộn tin nhắn
   const scrollToBottom = () => {
-    scrollViewRef.current?.scrollToEnd({ animated: true });
+    scrollViewRef.current?.scrollToEnd({
+      animated: true,
+    });
   };
-
-  useLayoutEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+  // Refresh tin nhắn
+  const onRefresh = async () => {
+    setRefreshing(true);
+    if (!isEndMessage) {
+      await loadMoreMessages();
+    } else {
+      setRefreshing(false);
+      console.log("Hết tin nhắn");
+    }
+  };
 
   // END: NHẮN TIN //
   // BEGIN: XỬ LÍ CHỌN ẢNH //
@@ -259,10 +298,12 @@ const ChatScreen = () => {
     setSelectedImages(updatedImages);
   };
   // END: XỬ LÍ CHỌN ẢNH //
-
   useEffect(() => {
     fetchRecepientData();
-    fetchMessages();
+    loadInitialMessages();
+    setTimeout(() => {
+      scrollToBottom();
+    }, 1000);
     return () => {
       cancelTokenSource.cancel();
     };
@@ -271,6 +312,7 @@ const ChatScreen = () => {
   useEffect(() => {
     socket.on("newMessage", (data) => {
       setMessages((prevMessages) => [...prevMessages, data.message]);
+      scrollToBottom();
     });
   }, []);
 
@@ -280,9 +322,18 @@ const ChatScreen = () => {
         ref={scrollViewRef}
         style={styles.messagesContainer}
         contentContainerStyle={styles.contentContainer}
-        onContentSizeChange={scrollToBottom}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={["#007aff"]}
+            progressBackgroundColor="#fff"
+          />
+        }
+        // onScroll={handleScroll}
+        // scrollEnabled = {isScrollEnabled}
       >
-        {messages.map(renderMessageBubble)}
+        {messages?.length > 0 ? messages.map(renderMessageBubble) : null}
       </ScrollView>
 
       {/* Thanh input */}
@@ -369,6 +420,7 @@ const styles = StyleSheet.create({
     width: 200,
     height: 200,
     borderRadius: 10,
+    backgroundColor: "#fff",
   },
   imageText: {
     padding: 10,

@@ -221,17 +221,6 @@ const Register = () => {
                 </View> */}
               </View>
 
-              {/* <TextInput
-                  value={image}
-                  onChangeText={(Text) => setImage(Text)}
-                  style={{
-                    width: 300,
-                    borderBottomColor: "#ccc",
-                    borderBottomWidth: 1,
-                    marginVertical: 4,
-                  }}
-                  placeholder="Image"
-                /> */}
             </View>
 
             <Pressable

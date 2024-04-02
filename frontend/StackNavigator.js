@@ -1,12 +1,14 @@
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View, TouchableOpacity } from "react-native";
 import React from "react";
 import LoginScreen from "./screens/LoginScreen";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import RegisterScreen from "./screens/RegisterScreen";
 import FriendsScreen from "./screens/FriendsScreen";
-import HomeScreeens from "./screens/HomeScreeens";
+import HomeScreeens from "./screens/HomeScreens";
 import ChatScreen from "./screens/ChatScreen";
+import ChatGroupSreen from "./screens/ChatGroupScreen";
+import { AntDesign } from '@expo/vector-icons';
 const Stack = createNativeStackNavigator();
 
 const StackNavigator = () => {
@@ -26,6 +28,29 @@ const StackNavigator = () => {
         <Stack.Screen name="Friends" component={FriendsScreen} />
         <Stack.Screen name="Home" component={HomeScreeens} />
         <Stack.Screen name="Messages" component={ChatScreen} />
+        <Stack.Screen
+          options={({ navigation }) => ({
+            headerTitle: "Group chat",
+            headerTransparent: false,
+            headerTintColor: "black",
+            headerTitleStyle: {
+              fontWeight: "bold",
+            },
+            headerRight: () => {
+              return (
+                <TouchableOpacity
+                  onPress={() => {
+                    navigation.navigate("Search");
+                  }}
+                >
+                  <AntDesign name="addusergroup" size={24} color="black" />
+                </TouchableOpacity>
+              );
+            },
+          })}
+          name="ChatGroupSreen"
+          component={ChatGroupSreen}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );

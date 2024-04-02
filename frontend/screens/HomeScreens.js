@@ -9,6 +9,7 @@ import { useContext } from "react";
 import UserChat from "../components/UserChat";
 import { socket } from "../socket";
 import { AntDesign } from "@expo/vector-icons";
+import { Feather } from "@expo/vector-icons";
 
 const HomeScreeens = () => {
   const cancelTokenSource = CancelToken.source();
@@ -23,16 +24,16 @@ const HomeScreeens = () => {
       headerLeft: () => <Text style={styles.headerNavTitle}>Home Chat</Text>,
       headerRight: () => (
         <View style={styles.containerIconLeft}>
-          <AntDesign
-            onPress={() => navigation.navigate("Chats")}
-            name="addusergroup"
-            size={26}
+          <Feather
+            onPress={() => navigation.navigate("ChatGroupSreen")}
+            name="users"
+            size={24}
             color="black"
           />
-          <MaterialIcons
+          <AntDesign
             onPress={() => navigation.navigate("Friends")}
-            name="people-outline"
-            size={28}
+            name="adduser"
+            size={24}
             color="black"
           />
         </View>
@@ -111,7 +112,6 @@ const HomeScreeens = () => {
   useFocusEffect(
     React.useCallback(() => {
       socket.on("newMessage", (data) => {
-        // getLatestMessageUser(data);
         getAllGroup();
       });
       return () => {
@@ -133,6 +133,6 @@ const HomeScreeens = () => {
 export default HomeScreeens;
 
 const styles = StyleSheet.create({
-  headerNavTitle: { fontSize: 16, fontWeight: "bold" },
+  headerNavTitle: { fontSize: 18, fontWeight: "bold" },
   containerIconLeft: { flexDirection: "row", alignItems: "center", gap: 10 },
 });

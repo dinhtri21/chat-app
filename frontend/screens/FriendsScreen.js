@@ -21,7 +21,7 @@ const HomeScreen = () => {
 
   useEffect(() => {
     navigation.setOptions({
-      headerBackTitle: "Custom Back",
+      headerBackTitle: "Friends",
       headerBackTitleStyle: { fontSize: 30 },
       headerTitle: () => <Text style={styles.headerNavTitle}>Friends</Text>,
       headerTitleAlign: "center",
@@ -120,11 +120,16 @@ const HomeScreen = () => {
 
   useEffect(() => {
     socket.on("addFriendStatus", (data) => {
-      if (data.success == true) {
+      if (data.success == true && data.receiverId == userId || data.senderId == userId) {
         fetchUsers();
         getListFriends();
         getListSentFriendRequests();
         getListFriendRequests();
+
+        socket.emit("joinGroup", {
+          groupId: data.groupId,
+          receiverId: data.receiverId,
+        });
       }
     });
     socket.on("friendRequestAccepted", (data) => {
@@ -166,6 +171,6 @@ const HomeScreen = () => {
 export default HomeScreen;
 
 const styles = StyleSheet.create({
-  headerNavTitle: { fontSize: 16, fontWeight: "bold" },
+  headerNavTitle: { fontSize: 18, fontWeight: "bold" },
   containerIconLeft: { flexDirection: "row", alignItems: "center", gap: 8 },
 });
