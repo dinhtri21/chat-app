@@ -28,7 +28,7 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigation = useNavigation();
-  const { userId, setUserId } = useContext(UserType);
+  const { userData, setuserData } = useContext(UserType);
   const [processing, setProcessing] = useState(false);
 
   const handleLogin = async () => {
@@ -50,8 +50,8 @@ const Login = () => {
       if (res.status == 200) {
         const token = res.data.token;
         await saveToken(token);
-        const userIddecoded = await saveUserIDtoContext(token);
-        await handleSocketLogin(userIddecoded);
+        const userDatadecoded = await saveuserDatatoContext(token);
+        await handleSocketLogin(userDatadecoded);
         navigation.replace("Home");
       } else {
         Alert.alert(`Đăng nhập không thành công! + ${res.data}`);
@@ -72,13 +72,27 @@ const Login = () => {
       console.log("Lỗi khi lưu token!");
     }
   };
-  const saveUserIDtoContext = async (token) => {
-    //Giải mã bằng decode base 64 token lấy userID
-    const userIddecoded = await JSON.parse(decode(token.split(".")[1])).userId;
+  const saveuserDatatoContext = async (token) => {
+    //Giải mã bằng decode base 64 token lấy userData
+    const userDatadecoded = await JSON.parse(decode(token.split(".")[1]))
+      .userId;
 
-    await setUserId(userIddecoded);
+    await fetchDataUser(userDatadecoded);
 
-    return userIddecoded;
+    return userDatadecoded;
+  };
+
+  const fetchDataUser = async (userDatadecoded) => {
+    try {
+      const response = await axios.get(
+        `${process.env.EXPRESS_API_URL}/user/user/${userDatadecoded}`
+      );
+      if (response.status == 200) {
+        await setuserData(response.data.user);
+      }
+    } catch (err) {
+      console.log(`Lỗi hàm fetchDataUser ${err}`);
+    }
   };
   const checkToken = async () => {
     try {
@@ -97,8 +111,8 @@ const Login = () => {
       );
 
       if (response.status === 200) {
-        const userIddecoded = await saveUserIDtoContext(authToken);
-        await handleSocketLogin(userIddecoded);
+        const userDatadecoded = await saveuserDatatoContext(authToken);
+        await handleSocketLogin(userDatadecoded);
         navigation.replace("Home");
       } else {
         console.log("Lỗi khi kiểm tra token:", response);
@@ -108,9 +122,9 @@ const Login = () => {
     }
   };
 
-  const handleSocketLogin = async (userIddecoded) => {
+  const handleSocketLogin = async (userDatadecoded) => {
     try {
-      await socket.emit("login", { userId: userIddecoded }, (res) => {
+      await socket.emit("login", { userId: userDatadecoded }, (res) => {
         console.log(`${res}`);
       });
     } catch (err) {
@@ -119,7 +133,7 @@ const Login = () => {
   };
 
   useEffect(() => {
-  //  checkToken()
+    checkToken();
     return () => {
       cancelTokenSource.cancel();
     };

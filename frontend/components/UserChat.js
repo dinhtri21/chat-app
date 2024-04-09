@@ -6,7 +6,7 @@ import { useContext } from "react";
 import { UserType } from "../UserContext";
 
 const UserChat = ({ item }) => {
-  const { userId, setUserId } = useContext(UserType);
+  const { userData, setuserData } = useContext(UserType);
   // const [backgroundColor, setBackgroundColor] = useState("transparent");
   const navigation = useNavigation();
   // Định dạng thời gian theo múi giờ Việt Nam
@@ -17,7 +17,7 @@ const UserChat = ({ item }) => {
   return (
     item?.latestMessage &&
     item?.members.map((member, index) => {
-      return userId !== member._id ? (
+      return userData._id !== member._id ? (
         <Pressable
           key={index}
           onPress={() => {
@@ -74,7 +74,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 0,
     borderLeftWidth: 0,
     borderRightWidth: 0,
-    paddingHorizontal: 12,
+    paddingHorizontal: 16,
     paddingVertical: 5,
   },
   containerInfo: {
@@ -82,7 +82,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     overflow: "hidden",
     gap: 1,
-    flex: 9,
+    flex: 8,
     // backgroundColor: "#ccc",
   },
   infoImg: {

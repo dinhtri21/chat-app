@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, ActivityIndicator } from "react-native";
+import { StyleSheet, Text, View, ActivityIndicator, Image } from "react-native";
 import React, { useEffect, useLayoutEffect, useState } from "react";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
@@ -10,18 +10,37 @@ import UserChat from "../components/UserChat";
 import { socket } from "../socket";
 import { AntDesign } from "@expo/vector-icons";
 import { Feather } from "@expo/vector-icons";
+import { FontAwesome } from '@expo/vector-icons';
 
 const HomeScreeens = () => {
   const cancelTokenSource = CancelToken.source();
   const navigation = useNavigation();
-  const { userId, setUserId } = useContext(UserType);
+  const { userData, setuserData } = useContext(UserType);
   const [listGroup, setListGroup] = useState([]);
   const [processing, setProcessing] = useState(false);
 
   useEffect(() => {
     navigation.setOptions({
       headerTitle: "",
-      headerLeft: () => <Text style={styles.headerNavTitle}>Home Chat</Text>,
+      // headerLeft: () => <Text style={styles.headerNavTitle}>Home Chat</Text>,
+      headerLeft: () => (
+        <View style={styles.headerNavTitle}>
+          <Image
+            style={{ height: 50, width: 50 }}
+            source={{
+              uri:
+                userData &&
+                userData.image &&
+                userData.image == `${process.env.EXPRESS_API_URL}`
+                  ? userData.image
+                  : "https://img.freepik.com/premium-vector/anonymous-user-circle-icon-vector-illustration-flat-style-with-long-shadow_520826-1931.jpg",
+            }}
+          />
+
+          <Text style={styles.infoNameUser}>{userData?.name}</Text>
+          <FontAwesome name="angle-down" size={24} color="black" />
+        </View>
+      ),
       headerRight: () => (
         <View style={styles.containerIconLeft}>
           <Feather
@@ -44,7 +63,7 @@ const HomeScreeens = () => {
   const getAllGroup = async () => {
     try {
       const response = await axios.get(
-        `${process.env.EXPRESS_API_URL}/group/getAllGroup/${userId}`,
+        `${process.env.EXPRESS_API_URL}/group/getAllGroup/${userData._id}`,
         {
           cancelToken: cancelTokenSource.token,
         }
@@ -57,7 +76,7 @@ const HomeScreeens = () => {
             let latestMessage = null;
             await Promise.all(
               group.members.map(async (member) => {
-                if (member._id != userId) {
+                if (member._id != userData._id) {
                   const recepientId = member._id;
                   latestMessage = await getLatestMessage(group, recepientId);
                 }
@@ -86,7 +105,7 @@ const HomeScreeens = () => {
   const getLatestMessage = async (group, recepientId) => {
     try {
       const res = await axios.get(
-        `${process.env.EXPRESS_API_URL}/messages/getLatestMessage/${userId}/${recepientId}`,
+        `${process.env.EXPRESS_API_URL}/messages/getLatestMessage/${userData._id}/${recepientId}`,
         {
           cancelToken: cancelTokenSource.token,
         }
@@ -133,6 +152,20 @@ const HomeScreeens = () => {
 export default HomeScreeens;
 
 const styles = StyleSheet.create({
-  headerNavTitle: { fontSize: 18, fontWeight: "bold" },
-  containerIconLeft: { flexDirection: "row", alignItems: "center", gap: 10 },
+  headerNavTitle: {
+    flex: 1,
+    gap: 8,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  containerIconLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  infoNameUser: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "rgba(10 10 10)",
+  },
 });

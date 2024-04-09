@@ -10,7 +10,7 @@ const User = ({
   users,
   friendRequests,
   listFriends,
-  userId,
+  userDataId,
 }) => {
   const isSent = requestSent.some((user) => user._id === item._id);
   const isUsers = users.some((user) => user._id === item._id);
@@ -69,7 +69,7 @@ const User = ({
         </Pressable>
       ) : isFriendRequest ? (
         <Pressable
-          onPress={() => acceptFriend(userId, item._id)}
+          onPress={() => acceptFriend(userDataId, item._id)}
           style={styles.friendRequestBtn}
         >
           <Text style={styles.textBtn}>Accept</Text>
@@ -80,7 +80,7 @@ const User = ({
         </Pressable>
       ) : isUsers ? (
         <Pressable
-          onPress={() => sendFriendRequest(userId, item._id)}
+          onPress={() => sendFriendRequest(userDataId, item._id)}
           style={styles.usersBtn}
         >
           <Text style={styles.textBtn}>Add Friend</Text>

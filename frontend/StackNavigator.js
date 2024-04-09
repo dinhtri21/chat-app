@@ -8,7 +8,7 @@ import FriendsScreen from "./screens/FriendsScreen";
 import HomeScreeens from "./screens/HomeScreens";
 import ChatScreen from "./screens/ChatScreen";
 import ChatGroupSreen from "./screens/ChatGroupScreen";
-import { AntDesign } from '@expo/vector-icons';
+import { AntDesign } from "@expo/vector-icons";
 const Stack = createNativeStackNavigator();
 
 const StackNavigator = () => {
@@ -25,8 +25,32 @@ const StackNavigator = () => {
           component={RegisterScreen}
           options={{ headerShown: false }}
         />
+
         <Stack.Screen name="Friends" component={FriendsScreen} />
-        <Stack.Screen name="Home" component={HomeScreeens} />
+        <Stack.Screen
+          // options={({ navigation }) => ({
+          //   headerTitle: "Group chat",
+          //   headerTransparent: false,
+          //   headerTintColor: "black",
+          //   headerTitleStyle: {
+          //     fontWeight: "bold",
+          //   },
+          //   headerLeft: () => <View style={styles.headerNavTitle}></View>,
+          //   headerRight: () => {
+          //     return (
+          //       <TouchableOpacity
+          //         onPress={() => {
+          //           navigation.navigate("Search");
+          //         }}
+          //       >
+          //         <AntDesign name="addusergroup" size={24} color="black" />
+          //       </TouchableOpacity>
+          //     );
+          //   },
+          // })}
+          name="Home"
+          component={HomeScreeens}
+        />
         <Stack.Screen name="Messages" component={ChatScreen} />
         <Stack.Screen
           options={({ navigation }) => ({
@@ -59,3 +83,4 @@ const StackNavigator = () => {
 export default StackNavigator;
 
 const styles = StyleSheet.create({});
+

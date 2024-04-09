@@ -14,7 +14,7 @@ const HomeScreen = () => {
   const cancelTokenSource = CancelToken.source();
   const navigation = useNavigation();
   const [users, setUsers] = useState([]);
-  const { userId, setUserId } = useContext(UserType);
+  const { userData, setuserData } = useContext(UserType);
   const [requestSent, setRequestSent] = useState([]);
   const [friendRequests, setFriendRequests] = useState([]);
   const [listFriends, setListFriends] = useState([]);
@@ -32,7 +32,7 @@ const HomeScreen = () => {
     const token = await AsyncStorage.getItem("authToken");
     try {
       const res = await axios.get(
-        `${process.env.EXPRESS_API_URL}/user/allUsers/${userId}`,
+        `${process.env.EXPRESS_API_URL}/user/allUsers/${userData._id}`,
         {
           cancelToken: cancelTokenSource.token,
         },
@@ -56,7 +56,7 @@ const HomeScreen = () => {
   const getListSentFriendRequests = async () => {
     try {
       const res = await axios.get(
-        `${process.env.EXPRESS_API_URL}/friend/getListSentFriendRequests/${userId}`,
+        `${process.env.EXPRESS_API_URL}/friend/getListSentFriendRequests/${userData._id}`,
         {
           cancelToken: cancelTokenSource.token,
         }
@@ -74,7 +74,7 @@ const HomeScreen = () => {
   const getListFriendRequests = async () => {
     try {
       const res = await axios.get(
-        `${process.env.EXPRESS_API_URL}/friend/getListFriendRequest/${userId}`,
+        `${process.env.EXPRESS_API_URL}/friend/getListFriendRequest/${userData._id}`,
         {
           cancelToken: cancelTokenSource.token,
         }
@@ -93,7 +93,7 @@ const HomeScreen = () => {
   const getListFriends = async () => {
     try {
       const res = await axios.get(
-        `${process.env.EXPRESS_API_URL}/friend/listFriends/${userId}`,
+        `${process.env.EXPRESS_API_URL}/friend/listFriends/${userData._id}`,
         {
           cancelToken: cancelTokenSource.token,
         }
@@ -120,7 +120,10 @@ const HomeScreen = () => {
 
   useEffect(() => {
     socket.on("addFriendStatus", (data) => {
-      if (data.success == true && data.receiverId == userId || data.senderId == userId) {
+      if (
+        (data.success == true && data.receiverId == userData._id) ||
+        data.senderId == userData._id
+      ) {
         fetchUsers();
         getListFriends();
         getListSentFriendRequests();
@@ -133,7 +136,9 @@ const HomeScreen = () => {
       }
     });
     socket.on("friendRequestAccepted", (data) => {
+      console.log(data);
       if (data.status == "success") {
+        console.log("djhsjhdjh");
         fetchUsers();
         getListFriends();
         getListSentFriendRequests();
@@ -148,6 +153,9 @@ const HomeScreen = () => {
     };
   }, []);
 
+  useEffect(()=> {
+
+  },[])
   return (
     <View>
       {users &&
@@ -160,7 +168,7 @@ const HomeScreen = () => {
               requestSent={requestSent}
               friendRequests={friendRequests}
               listFriends={listFriends}
-              userId={userId}
+              userDataId={userData._id}
             />
           );
         })}

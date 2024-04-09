@@ -39,7 +39,7 @@ const ChatScreen = () => {
   const { recepientId } = route.params;
   const navigation = useNavigation();
   const [recepientData, setRecepientData] = useState({});
-  const { userId, setUserId } = useContext(UserType);
+  const { userData, setuserData } = useContext(UserType);
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState("");
   const cancelTokenSource = CancelToken.source();
@@ -89,7 +89,7 @@ const ChatScreen = () => {
   const fetchRecepientData = async () => {
     try {
       const res = await axios.get(
-        `${process.env.EXPRESS_API_URL}/user/user/${recepientId}`,
+        `${process.env.EXPRESS_API_URL}/user/${recepientId}`,
         {
           cancelToken: cancelTokenSource.token,
         }
@@ -106,7 +106,7 @@ const ChatScreen = () => {
   const fetchMessages = async () => {
     try {
       const response = await axios.get(
-        `${process.env.EXPRESS_API_URL}/messages/getMessages/${userId}/${recepientId}`,
+        `${process.env.EXPRESS_API_URL}/messages/getMessages/${userData._id}/${recepientId}`,
         {
           cancelToken: cancelTokenSource.token,
           params: { offset, limit },
@@ -162,7 +162,7 @@ const ChatScreen = () => {
         encoding: FileSystem.EncodingType.Base64,
       });
       socket.emit("sendMessage", {
-        senderId: userId,
+        senderId: userData._id,
         recepientId: recepientId,
         messageType: "image",
         message: "",
@@ -180,7 +180,7 @@ const ChatScreen = () => {
     try {
       if (inputMessage.trim() !== "") {
         socket.emit("sendMessage", {
-          senderId: userId,
+          senderId: userData._id,
           recepientId: recepientId,
           messageType: "text",
           message: inputMessage.trim(),
@@ -197,7 +197,7 @@ const ChatScreen = () => {
 
   // Render tin nhắn
   const renderMessageBubble = (message, index) => {
-    const isUserMessage = message.senderId === userId;
+    const isUserMessage = message.senderId === userData._id;
     return (
       <View
         key={index}
