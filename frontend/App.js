@@ -1,16 +1,21 @@
 import { StyleSheet, Text, View } from "react-native";
 import StackNavigator from "./StackNavigator";
 import { UserContext } from "./UserContext";
-import { EXPRESS_API_URL } from "@env";
+import { BottomSheetModalProvider} from "@gorhom/bottom-sheet";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 export default function App() {
   console.log(process.env.EXPRESS_API_URL);
   //npx expo start -c
   return (
     <>
-      <UserContext>
-        <StackNavigator />
-      </UserContext>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <BottomSheetModalProvider>
+          <UserContext>
+            <StackNavigator />
+          </UserContext>
+        </BottomSheetModalProvider>
+      </GestureHandlerRootView>
     </>
   );
 }

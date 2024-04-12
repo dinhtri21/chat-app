@@ -7,6 +7,7 @@ var fullwidth = Dimensions.get("window").width; //full width
 var fullheight = Dimensions.get("window").height; //full height
 
 const ChatGroupSreen = () => {
+
   const navigation = useNavigation();
   return (
     <View>
@@ -25,6 +26,6 @@ const styles = StyleSheet.create({
     width: fullwidth,
     flexDirection: "row",
     justifyContent: "space-between",
-    backgroundColor: "#ccc"
+    backgroundColor: "#ccc",
   },
 });

@@ -1,4 +1,10 @@
-import { StyleSheet, Text, View, TouchableOpacity } from "react-native";
+import {
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+  BackHandler,
+} from "react-native";
 import React from "react";
 import LoginScreen from "./screens/LoginScreen";
 import { NavigationContainer } from "@react-navigation/native";
@@ -27,30 +33,7 @@ const StackNavigator = () => {
         />
 
         <Stack.Screen name="Friends" component={FriendsScreen} />
-        <Stack.Screen
-          // options={({ navigation }) => ({
-          //   headerTitle: "Group chat",
-          //   headerTransparent: false,
-          //   headerTintColor: "black",
-          //   headerTitleStyle: {
-          //     fontWeight: "bold",
-          //   },
-          //   headerLeft: () => <View style={styles.headerNavTitle}></View>,
-          //   headerRight: () => {
-          //     return (
-          //       <TouchableOpacity
-          //         onPress={() => {
-          //           navigation.navigate("Search");
-          //         }}
-          //       >
-          //         <AntDesign name="addusergroup" size={24} color="black" />
-          //       </TouchableOpacity>
-          //     );
-          //   },
-          // })}
-          name="Home"
-          component={HomeScreeens}
-        />
+        <Stack.Screen name="Home" component={HomeScreeens} />
         <Stack.Screen name="Messages" component={ChatScreen} />
         <Stack.Screen
           options={({ navigation }) => ({
@@ -83,4 +66,3 @@ const StackNavigator = () => {
 export default StackNavigator;
 
 const styles = StyleSheet.create({});
-

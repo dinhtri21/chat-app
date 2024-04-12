@@ -10,7 +10,7 @@ import UserChat from "../components/UserChat";
 import { socket } from "../socket";
 import { AntDesign } from "@expo/vector-icons";
 import { Feather } from "@expo/vector-icons";
-import { FontAwesome } from '@expo/vector-icons';
+import Setting from "../components/Setting";
 
 const HomeScreeens = () => {
   const cancelTokenSource = CancelToken.source();
@@ -38,7 +38,6 @@ const HomeScreeens = () => {
           />
 
           <Text style={styles.infoNameUser}>{userData?.name}</Text>
-          <FontAwesome name="angle-down" size={24} color="black" />
         </View>
       ),
       headerRight: () => (
@@ -55,6 +54,7 @@ const HomeScreeens = () => {
             size={24}
             color="black"
           />
+          <Setting userData={userData} setuserData={setuserData} />
         </View>
       ),
     });
@@ -140,7 +140,7 @@ const HomeScreeens = () => {
   );
   return (
     <>
-      <View>
+      <View style={{backgroundColor: "#fff", flex: 1}}>
         {listGroup.map((group, index) => {
           return <UserChat key={index} item={group} />;
         })}
@@ -166,6 +166,6 @@ const styles = StyleSheet.create({
   infoNameUser: {
     fontSize: 16,
     fontWeight: "700",
-    color: "rgba(10 10 10)",
+    color: "#000",
   },
 });

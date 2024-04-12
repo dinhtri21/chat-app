@@ -153,11 +153,9 @@ const HomeScreen = () => {
     };
   }, []);
 
-  useEffect(()=> {
-
-  },[])
+  useEffect(() => {}, []);
   return (
-    <View>
+    <View style={{ backgroundColor: "#fff", flex: 1 }}>
       {users &&
         users.map((item, index) => {
           return (

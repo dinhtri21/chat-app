@@ -74,10 +74,6 @@ const ChatScreen = () => {
                 source={require("../assets/default-profile-picture-avatar.jpg")}
               />
             )}
-            {/* <Image
-              style={styles.headerInfoImage}
-              source={{ uri: recepientData?.image }}
-            /> */}
             <Text style={styles.headerNavTitle}>{recepientData?.name}</Text>
           </View>
         </View>
@@ -89,7 +85,7 @@ const ChatScreen = () => {
   const fetchRecepientData = async () => {
     try {
       const res = await axios.get(
-        `${process.env.EXPRESS_API_URL}/user/${recepientId}`,
+        `${process.env.EXPRESS_API_URL}/user/user/${recepientId}`,
         {
           cancelToken: cancelTokenSource.token,
         }
@@ -102,7 +98,6 @@ const ChatScreen = () => {
       console.log("Lỗi hàm fetchRecepientData: ", error);
     }
   };
-
   const fetchMessages = async () => {
     try {
       const response = await axios.get(
