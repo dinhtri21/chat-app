@@ -1,16 +1,25 @@
-import { StyleSheet, Text, View, ActivityIndicator, Image } from "react-native";
-import React, { useEffect, useLayoutEffect, useState } from "react";
-import { useFocusEffect, useNavigation } from "@react-navigation/native";
-import { Ionicons } from "@expo/vector-icons";
-import { MaterialIcons } from "@expo/vector-icons";
-import axios, { CancelToken } from "axios";
-import { UserType } from "../UserContext";
-import { useContext } from "react";
-import UserChat from "../components/UserChat";
-import { socket } from "../socket";
-import { AntDesign } from "@expo/vector-icons";
-import { Feather } from "@expo/vector-icons";
-import Setting from "../components/Setting";
+import { StyleSheet, Text, View, Image, Animated, Easing } from 'react-native';
+import React, { useEffect, useLayoutEffect, useState, useRef } from 'react';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { MaterialIcons } from '@expo/vector-icons';
+import axios, { CancelToken } from 'axios';
+import { UserType } from '../UserContext';
+import { useContext } from 'react';
+import UserChat from '../components/UserChat';
+import { socket } from '../socket';
+import { AntDesign } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
+import Setting from '../components/Setting';
+import { Ionicons } from '@expo/vector-icons';
+import { Dimensions } from 'react-native';
+// import Animated, {
+//   useSharedValue,
+//   withTiming,
+//   interpolate,
+// } from 'react-native-reanimated';
+
+var fullwidth = Dimensions.get('window').width; //full width
+var fullheight = Dimensions.get('window').height; //full height
 
 const HomeScreeens = () => {
   const cancelTokenSource = CancelToken.source();
@@ -18,11 +27,19 @@ const HomeScreeens = () => {
   const { userData, setuserData } = useContext(UserType);
   const [listGroup, setListGroup] = useState([]);
   const [processing, setProcessing] = useState(false);
+  const [onModal, setOnMadal] = useState(false);
+
+  const handlePresentModalPress = () => {
+    // bottomSheetModalRef.current?.present();
+    setOnMadal(true);
+  };
 
   useEffect(() => {
     navigation.setOptions({
-      headerTitle: "",
-      // headerLeft: () => <Text style={styles.headerNavTitle}>Home Chat</Text>,
+      headerTitle: '',
+      headerStyle: {
+        zIndex: 1, // Đặt zIndex ở mức cao nhất
+      },
       headerLeft: () => (
         <View style={styles.headerNavTitle}>
           <Image
@@ -33,7 +50,7 @@ const HomeScreeens = () => {
                 userData.image &&
                 userData.image == `${process.env.EXPRESS_API_URL}`
                   ? userData.image
-                  : "https://img.freepik.com/premium-vector/anonymous-user-circle-icon-vector-illustration-flat-style-with-long-shadow_520826-1931.jpg",
+                  : 'https://img.freepik.com/premium-vector/anonymous-user-circle-icon-vector-illustration-flat-style-with-long-shadow_520826-1931.jpg',
             }}
           />
 
@@ -43,18 +60,23 @@ const HomeScreeens = () => {
       headerRight: () => (
         <View style={styles.containerIconLeft}>
           <Feather
-            onPress={() => navigation.navigate("ChatGroupSreen")}
+            onPress={() => navigation.navigate('ChatGroupSreen')}
             name="users"
             size={24}
             color="black"
           />
           <AntDesign
-            onPress={() => navigation.navigate("Friends")}
+            onPress={() => navigation.navigate('Friends')}
             name="adduser"
             size={24}
             color="black"
           />
-          <Setting userData={userData} setuserData={setuserData} />
+          <Ionicons
+            onPress={handlePresentModalPress}
+            name="settings-outline"
+            size={24}
+            color="black"
+          />
         </View>
       ),
     });
@@ -99,7 +121,7 @@ const HomeScreeens = () => {
         setListGroup(updatedList);
       }
     } catch (error) {
-      console.log("Lỗi hàm getAllGroup -- " + error);
+      console.log('Lỗi hàm getAllGroup -- ' + error);
     }
   };
   const getLatestMessage = async (group, recepientId) => {
@@ -116,7 +138,7 @@ const HomeScreeens = () => {
         return newMessage;
       }
     } catch (err) {
-      console.log("Lỗi getLatestMessage: " + err);
+      console.log('Lỗi getLatestMessage: ' + err);
     }
     return null;
   };
@@ -130,7 +152,7 @@ const HomeScreeens = () => {
 
   useFocusEffect(
     React.useCallback(() => {
-      socket.on("newMessage", (data) => {
+      socket.on('newMessage', (data) => {
         getAllGroup();
       });
       return () => {
@@ -138,13 +160,51 @@ const HomeScreeens = () => {
       };
     }, [])
   );
+
+  const fadeAnim = useRef(new Animated.Value(0)).current; // Initial value for opacity: 0
+
+  const showContent = () => {
+    return Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 250,
+      easing: Easing.ease,
+      useNativeDriver: false,
+    }).start(() => {});
+  };
+  useEffect(() => {
+    if (onModal) {
+      showContent();
+    } else {
+      fadeAnim.setValue(0);
+    }
+  }, [onModal]);
+
   return (
     <>
-      <View style={{backgroundColor: "#fff", flex: 1}}>
+      <View style={{ backgroundColor: '#fff', flex: 1 }}>
         {listGroup.map((group, index) => {
           return <UserChat key={index} item={group} />;
         })}
       </View>
+      <Setting
+        userData={userData}
+        onModal={onModal}
+        setuserData={setuserData}
+        setOnMadal={setOnMadal}
+      ></Setting>
+      {onModal ? (
+        <Animated.View
+          style={[
+            styles.blur,
+            {
+              height: fadeAnim.interpolate({
+                inputRange: [0, 1],
+                outputRange: ['0%', '200%'],
+              }),
+            },
+          ]}
+        ></Animated.View>
+      ) : null}
     </>
   );
 };
@@ -155,17 +215,25 @@ const styles = StyleSheet.create({
   headerNavTitle: {
     flex: 1,
     gap: 8,
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   containerIconLeft: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 10,
   },
   infoNameUser: {
     fontSize: 16,
-    fontWeight: "700",
-    color: "#000",
+    fontWeight: '700',
+    color: '#000',
+  },
+  blur: {
+    zIndex: 999,
+    height: '100%',
+    position: 'absolute',
+    width: fullwidth,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
 });

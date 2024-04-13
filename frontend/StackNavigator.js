@@ -4,17 +4,17 @@ import {
   View,
   TouchableOpacity,
   BackHandler,
-} from "react-native";
-import React from "react";
-import LoginScreen from "./screens/LoginScreen";
-import { NavigationContainer } from "@react-navigation/native";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import RegisterScreen from "./screens/RegisterScreen";
-import FriendsScreen from "./screens/FriendsScreen";
-import HomeScreeens from "./screens/HomeScreens";
-import ChatScreen from "./screens/ChatScreen";
-import ChatGroupSreen from "./screens/ChatGroupScreen";
-import { AntDesign } from "@expo/vector-icons";
+} from 'react-native';
+import React from 'react';
+import LoginScreen from './screens/LoginScreen';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import RegisterScreen from './screens/RegisterScreen';
+import FriendsScreen from './screens/FriendsScreen';
+import HomeScreeens from './screens/HomeScreens';
+import ChatScreen from './screens/ChatScreen';
+import ChatGroupSreen from './screens/ChatGroupScreen';
+import { AntDesign } from '@expo/vector-icons';
 const Stack = createNativeStackNavigator();
 
 const StackNavigator = () => {
@@ -37,26 +37,32 @@ const StackNavigator = () => {
         <Stack.Screen name="Messages" component={ChatScreen} />
         <Stack.Screen
           options={({ navigation }) => ({
-            headerTitle: "Group chat",
+            headerTitle: 'Group chat',
             headerTransparent: false,
-            headerTintColor: "black",
+            headerTintColor: 'black',
             headerTitleStyle: {
-              fontWeight: "bold",
+              fontWeight: 'bold',
             },
+
             headerRight: () => {
               return (
                 <TouchableOpacity
                   onPress={() => {
-                    navigation.navigate("Search");
+                    navigation.navigate('Search');
                   }}
                 >
                   <AntDesign name="addusergroup" size={24} color="black" />
                 </TouchableOpacity>
               );
             },
+            // headerStyle: {
+            //   position: 'absolute',
+            //   zIndex: 1, // Đặt zIndex cho header
+            // },
           })}
           name="ChatGroupSreen"
           component={ChatGroupSreen}
+          // options={{ headerShown: false }}
         />
       </Stack.Navigator>
     </NavigationContainer>
