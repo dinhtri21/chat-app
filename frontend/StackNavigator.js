@@ -55,14 +55,9 @@ const StackNavigator = () => {
                 </TouchableOpacity>
               );
             },
-            // headerStyle: {
-            //   position: 'absolute',
-            //   zIndex: 1, // Đặt zIndex cho header
-            // },
           })}
           name="ChatGroupSreen"
           component={ChatGroupSreen}
-          // options={{ headerShown: false }}
         />
       </Stack.Navigator>
     </NavigationContainer>

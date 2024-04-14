@@ -1,14 +1,21 @@
-import { Alert, StyleSheet, Text, View, Button } from "react-native";
-import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { useNavigation } from "@react-navigation/native";
-import { useContext } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { UserType } from "../UserContext";
-import axios, { CancelToken } from "axios";
-import User from "../components/User";
-import { socket } from "../socket";
-import { Ionicons } from "@expo/vector-icons";
-import { MaterialIcons } from "@expo/vector-icons";
+import {
+  Alert,
+  StyleSheet,
+  Text,
+  View,
+  Button,
+  ScrollView,
+} from 'react-native';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useNavigation } from '@react-navigation/native';
+import { useContext } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { UserType } from '../UserContext';
+import axios, { CancelToken } from 'axios';
+import User from '../components/User';
+import { socket } from '../socket';
+import { Ionicons } from '@expo/vector-icons';
+import { MaterialIcons } from '@expo/vector-icons';
 
 const HomeScreen = () => {
   const cancelTokenSource = CancelToken.source();
@@ -21,15 +28,15 @@ const HomeScreen = () => {
 
   useEffect(() => {
     navigation.setOptions({
-      headerBackTitle: "Friends",
+      headerBackTitle: 'Friends',
       headerBackTitleStyle: { fontSize: 30 },
-      headerTitle: () => <Text style={styles.headerNavTitle}>Friends</Text>,
-      headerTitleAlign: "center",
+      headerTitle: () => <Text style={styles.headerNavTitle}>Bạn Bè</Text>,
+      headerTitleAlign: 'center',
     });
   }, []);
 
   const fetchUsers = async () => {
-    const token = await AsyncStorage.getItem("authToken");
+    const token = await AsyncStorage.getItem('authToken');
     try {
       const res = await axios.get(
         `${process.env.EXPRESS_API_URL}/user/allUsers/${userData._id}`,
@@ -49,7 +56,7 @@ const HomeScreen = () => {
         console.log(res);
       }
     } catch (err) {
-      console.log("Lỗi fetchUsers" + err);
+      console.log('Lỗi fetchUsers' + err);
     }
   };
 
@@ -65,10 +72,10 @@ const HomeScreen = () => {
         const data = res.data;
         setRequestSent(data);
       } else {
-        console.log("Lỗi axios getListSentFriendRequests");
+        console.log('Lỗi axios getListSentFriendRequests');
       }
     } catch (err) {
-      console.log("Lỗi getListSentFriendRequests" + err);
+      console.log('Lỗi getListSentFriendRequests' + err);
     }
   };
   const getListFriendRequests = async () => {
@@ -83,10 +90,10 @@ const HomeScreen = () => {
         const data = res.data;
         setFriendRequests(data);
       } else {
-        console.log("Lỗi axios getListFriendRequests");
+        console.log('Lỗi axios getListFriendRequests');
       }
     } catch (err) {
-      console.log("Lỗi getListFriendRequests" + err);
+      console.log('Lỗi getListFriendRequests' + err);
     }
   };
 
@@ -102,10 +109,10 @@ const HomeScreen = () => {
         const data = res.data;
         setListFriends(data);
       } else {
-        console.log("Lỗi axios getListFriendRequests");
+        console.log('Lỗi axios getListFriendRequests');
       }
     } catch (err) {
-      console.log("Lỗi getListFriendRequests" + err);
+      console.log('Lỗi getListFriendRequests' + err);
     }
   };
   useEffect(() => {
@@ -119,7 +126,7 @@ const HomeScreen = () => {
   }, []);
 
   useEffect(() => {
-    socket.on("addFriendStatus", (data) => {
+    socket.on('addFriendStatus', (data) => {
       if (
         (data.success == true && data.receiverId == userData._id) ||
         data.senderId == userData._id
@@ -129,16 +136,16 @@ const HomeScreen = () => {
         getListSentFriendRequests();
         getListFriendRequests();
 
-        socket.emit("joinGroup", {
+        socket.emit('joinGroup', {
           groupId: data.groupId,
           receiverId: data.receiverId,
         });
       }
     });
-    socket.on("friendRequestAccepted", (data) => {
+    socket.on('friendRequestAccepted', (data) => {
       console.log(data);
-      if (data.status == "success") {
-        console.log("djhsjhdjh");
+      if (data.status == 'success') {
+        console.log('djhsjhdjh');
         fetchUsers();
         getListFriends();
         getListSentFriendRequests();
@@ -146,16 +153,19 @@ const HomeScreen = () => {
       }
     });
     return () => {
-      socket.off("newMessage");
-      socket.off("addFriendStatus");
-      socket.off("friendRequestAccepted");
+      socket.off('newMessage');
+      socket.off('addFriendStatus');
+      socket.off('friendRequestAccepted');
       cancelTokenSource.cancel();
     };
   }, []);
 
   useEffect(() => {}, []);
   return (
-    <View style={{ backgroundColor: "#fff", flex: 1 }}>
+    <ScrollView
+      style={styles.friendContainer}
+      contentContainerStyle={styles.contentFriendContainer}
+    >
       {users &&
         users.map((item, index) => {
           return (
@@ -170,13 +180,20 @@ const HomeScreen = () => {
             />
           );
         })}
-    </View>
+    </ScrollView>
   );
 };
 
 export default HomeScreen;
 
 const styles = StyleSheet.create({
-  headerNavTitle: { fontSize: 18, fontWeight: "bold" },
-  containerIconLeft: { flexDirection: "row", alignItems: "center", gap: 8 },
+  headerNavTitle: { fontSize: 20, fontWeight: '700' },
+  containerIconLeft: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  friendContainer: {
+    backgroundColor: 'rgba(0,0,0,0.001)',
+    flex: 1,
+    paddingHorizontal: 2,
+  },
+  contentFriendContainer: {
+  },
 });

@@ -7,7 +7,6 @@ import { UserType } from "../UserContext";
 
 const UserChat = ({ item }) => {
   const { userData, setuserData } = useContext(UserType);
-  // const [backgroundColor, setBackgroundColor] = useState("transparent");
   const navigation = useNavigation();
   // Định dạng thời gian theo múi giờ Việt Nam
   const formattedTime = moment(item?.latestMessage?.timeStamp)
@@ -74,7 +73,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 0,
     borderLeftWidth: 0,
     borderRightWidth: 0,
-    paddingHorizontal: 16,
+    paddingHorizontal: 14,
     paddingVertical: 5,
   },
   containerInfo: {
@@ -83,7 +82,6 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     gap: 1,
     flex: 8,
-    // backgroundColor: "#ccc",
   },
   infoImg: {
     width: 50,

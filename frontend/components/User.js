@@ -1,8 +1,8 @@
-import { Pressable, StyleSheet, Text, View, Image } from "react-native";
-import React, { useEffect, useState } from "react";
-import { socket } from "../socket";
-import axios from "axios";
-import { useNavigation } from "@react-navigation/native";
+import { Pressable, StyleSheet, Text, View, Image } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { socket } from '../socket';
+import axios from 'axios';
+import { useNavigation } from '@react-navigation/native';
 
 const User = ({
   item,
@@ -19,7 +19,7 @@ const User = ({
   const navigation = useNavigation();
   const acceptFriend = async (currentUserId, selectedUserId) => {
     try {
-      socket.emit("acceptFriend", {
+      socket.emit('acceptFriend', {
         acceptorId: currentUserId,
         senderId: selectedUserId,
       });
@@ -29,7 +29,7 @@ const User = ({
   };
   const sendFriendRequest = async (currentUserId, selectedUserId) => {
     try {
-      socket.emit("friendRequest", {
+      socket.emit('friendRequest', {
         senderId: currentUserId,
         receiverId: selectedUserId,
       });
@@ -41,21 +41,17 @@ const User = ({
   return (
     <Pressable
       onPress={() => {
-        navigation.navigate("Messages", { recepientId: item._id });
+        navigation.navigate('Messages', { recepientId: item._id });
       }}
       style={styles.containerUser}
     >
       <View style={styles.containerInfo}>
-        {/* <Image style={styles.infoImg} source={{ uri: item.image }} /> */}
         {item.image ? (
-          <Image
-            style={styles.infoImg}
-            source={{ uri: item.image }}
-          />
+          <Image style={styles.infoImg} source={{ uri: item.image }} />
         ) : (
           <Image
             style={styles.infoImg}
-            source={require("../assets/default-profile-picture-avatar.jpg")}
+            source={require('../assets/default-profile-picture-avatar.jpg')}
           />
         )}
         <View style={{ marginLeft: 12 }}>
@@ -65,7 +61,7 @@ const User = ({
       </View>
       {isSent ? (
         <Pressable style={styles.sentBtn}>
-          <Text style={styles.textBtn}>Sent</Text>
+          <Text style={styles.textBtn}>Đã gửi</Text>
         </Pressable>
       ) : isFriendRequest ? (
         <Pressable
@@ -76,14 +72,14 @@ const User = ({
         </Pressable>
       ) : isFriend ? (
         <Pressable style={styles.friendBtn}>
-          <Text style={styles.textGrayBtn}>Friend</Text>
+          <Text style={styles.textGrayBtn}>Bạn bè</Text>
         </Pressable>
       ) : isUsers ? (
         <Pressable
           onPress={() => sendFriendRequest(userDataId, item._id)}
           style={styles.usersBtn}
         >
-          <Text style={styles.textBtn}>Add Friend</Text>
+          <Text style={styles.textBtn}>Kết bạn</Text>
         </Pressable>
       ) : (
         <></>
@@ -96,65 +92,65 @@ export default User;
 
 const styles = StyleSheet.create({
   containerUser: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingVertical: 10,
     paddingHorizontal: 14,
     borderWidth: 0.5,
-    borderColor: "#D0D0D0",
-    // borderColor: "#000",
+    borderColor: '#D0D0D0',
     borderTopWidth: 0,
-    // backgroundColor: "#ccc"
+    backgroundColor: '#fff',
+    borderRadius: 4
   },
-  containerInfo: { flexDirection: "row", alignItems: "center", gap: 2 },
+  containerInfo: { flexDirection: 'row', alignItems: 'center', gap: 2 },
   infoImg: {
     width: 50,
     height: 50,
     borderRadius: 25,
-    resizeMode: "cover",
+    resizeMode: 'cover',
   },
-  infoName: { fontSize: 15, fontWeight: "400" },
-  infoEmail: { marginTop: 2, color: "gray" },
+  infoName: { fontSize: 15, fontWeight: '400' },
+  infoEmail: { marginTop: 2, color: 'gray' },
   sentBtn: {
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "gray",
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.3)',
     width: 105,
     paddingVertical: 6,
     paddingHorizontal: 6,
     borderRadius: 4,
   },
   friendRequestBtn: {
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#82CD47",
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#82CD47',
     width: 105,
     paddingVertical: 6,
     paddingHorizontal: 6,
     borderRadius: 4,
   },
   friendBtn: {
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
     width: 105,
     paddingVertical: 6,
     paddingHorizontal: 6,
     borderRadius: 4,
     borderWidth: 0.4,
-    borderColor: "#808080",
+    borderColor: 'rgba(0,0,0,0.3)',
   },
   usersBtn: {
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#0178f6",
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#4f93fe',
     width: 105,
     paddingVertical: 6,
     paddingHorizontal: 6,
     borderRadius: 4,
   },
-  textBtn: { color: "#fff" },
+  textBtn: { color: '#fff' },
   textGrayBtn: {
-    color: "#808080",
+    color: '#303030',
   },
 });

@@ -1,7 +1,6 @@
 import { StyleSheet, Text, View, Image, Animated, Easing } from 'react-native';
 import React, { useEffect, useLayoutEffect, useState, useRef } from 'react';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
-import { MaterialIcons } from '@expo/vector-icons';
 import axios, { CancelToken } from 'axios';
 import { UserType } from '../UserContext';
 import { useContext } from 'react';
@@ -12,12 +11,6 @@ import { Feather } from '@expo/vector-icons';
 import Setting from '../components/Setting';
 import { Ionicons } from '@expo/vector-icons';
 import { Dimensions } from 'react-native';
-// import Animated, {
-//   useSharedValue,
-//   withTiming,
-//   interpolate,
-// } from 'react-native-reanimated';
-
 var fullwidth = Dimensions.get('window').width; //full width
 var fullheight = Dimensions.get('window').height; //full height
 
@@ -30,8 +23,8 @@ const HomeScreeens = () => {
   const [onModal, setOnMadal] = useState(false);
 
   const handlePresentModalPress = () => {
-    // bottomSheetModalRef.current?.present();
     setOnMadal(true);
+    console.log('dsj');
   };
 
   useEffect(() => {
@@ -42,19 +35,14 @@ const HomeScreeens = () => {
       },
       headerLeft: () => (
         <View style={styles.headerNavTitle}>
-          <Image
-            style={{ height: 50, width: 50 }}
-            source={{
-              uri:
-                userData &&
-                userData.image &&
-                userData.image == `${process.env.EXPRESS_API_URL}`
-                  ? userData.image
-                  : 'https://img.freepik.com/premium-vector/anonymous-user-circle-icon-vector-illustration-flat-style-with-long-shadow_520826-1931.jpg',
+          <Text
+            style={{
+              fontSize: 20,
+              fontWeight: '700',
             }}
-          />
-
-          <Text style={styles.infoNameUser}>{userData?.name}</Text>
+          >
+            Đoạn chat
+          </Text>
         </View>
       ),
       headerRight: () => (
@@ -161,23 +149,23 @@ const HomeScreeens = () => {
     }, [])
   );
 
-  const fadeAnim = useRef(new Animated.Value(0)).current; // Initial value for opacity: 0
+  // const fadeAnim = useRef(new Animated.Value(0)).current; // Initial value for opacity: 0
 
-  const showContent = () => {
-    return Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 250,
-      easing: Easing.ease,
-      useNativeDriver: false,
-    }).start(() => {});
-  };
-  useEffect(() => {
-    if (onModal) {
-      showContent();
-    } else {
-      fadeAnim.setValue(0);
-    }
-  }, [onModal]);
+  // const showContent = () => {
+  //   return Animated.timing(fadeAnim, {
+  //     toValue: 1,
+  //     duration: 250,
+  //     easing: Easing.ease,
+  //     useNativeDriver: false,
+  //   }).start(() => {});
+  // };
+  // useEffect(() => {
+  //   if (onModal) {
+  //     showContent();
+  //   } else {
+  //     fadeAnim.setValue(0);
+  //   }
+  // }, [onModal]);
 
   return (
     <>
@@ -192,19 +180,19 @@ const HomeScreeens = () => {
         setuserData={setuserData}
         setOnMadal={setOnMadal}
       ></Setting>
-      {onModal ? (
+      {/* {onModal ? (
         <Animated.View
           style={[
             styles.blur,
             {
               height: fadeAnim.interpolate({
                 inputRange: [0, 1],
-                outputRange: ['0%', '200%'],
+                outputRange: [100, 2000],
               }),
             },
           ]}
         ></Animated.View>
-      ) : null}
+      ) : null} */}
     </>
   );
 };
@@ -226,14 +214,14 @@ const styles = StyleSheet.create({
   infoNameUser: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#000',
+    color: '#rgba(0, 0, 0, 0.5)',
   },
   blur: {
-    zIndex: 999,
-    height: '100%',
     position: 'absolute',
     width: fullwidth,
     bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    // elevation: 99,
+    // zIndex: 99,
+    backgroundColor: 'rgba(0, 0, 0, 0.2)',
   },
 });
