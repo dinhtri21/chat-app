@@ -5,7 +5,7 @@ import {
   TouchableOpacity,
   BackHandler,
 } from 'react-native';
-import React from 'react';
+import React, { useState } from 'react';
 import LoginScreen from './screens/LoginScreen';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -31,34 +31,10 @@ const StackNavigator = () => {
           component={RegisterScreen}
           options={{ headerShown: false }}
         />
-
         <Stack.Screen name="Friends" component={FriendsScreen} />
         <Stack.Screen name="Home" component={HomeScreeens} />
         <Stack.Screen name="Messages" component={ChatScreen} />
-        <Stack.Screen
-          options={({ navigation }) => ({
-            headerTitle: 'Group chat',
-            headerTransparent: false,
-            headerTintColor: 'black',
-            headerTitleStyle: {
-              fontWeight: 'bold',
-            },
-
-            headerRight: () => {
-              return (
-                <TouchableOpacity
-                  onPress={() => {
-                    navigation.navigate('Search');
-                  }}
-                >
-                  <AntDesign name="addusergroup" size={24} color="black" />
-                </TouchableOpacity>
-              );
-            },
-          })}
-          name="ChatGroupSreen"
-          component={ChatGroupSreen}
-        />
+        <Stack.Screen name="ChatGroupSreen" component={ChatGroupSreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

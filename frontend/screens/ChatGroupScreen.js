@@ -1,19 +1,53 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { AntDesign } from '@expo/vector-icons';
 import { Dimensions } from 'react-native';
+import ModalGroupChat from '../components/GroupChatModal';
+import { UserType } from '../UserContext';
+
 var fullwidth = Dimensions.get('window').width; //full width
 var fullheight = Dimensions.get('window').height; //full height
 
 const ChatGroupSreen = () => {
+  const { userData, setuserData } = useContext(UserType);
   const navigation = useNavigation();
+  const [onModal, setOnMadal] = useState(false);
+
+  const handlePresentModalPress = () => {
+    setOnMadal(true);
+  };
+
+  useEffect(() => {
+    navigation.setOptions({
+      headerTitle: () => (
+        <View style={styles.headerNavTitle}>
+          <Text
+            style={{
+              fontSize: 20,
+              fontWeight: '700',
+            }}
+          >
+            Nhóm chat
+          </Text>
+        </View>
+      ),
+      headerRight: () => (
+        <View style={styles.containerIconLeft}>
+          <AntDesign
+            onPress={handlePresentModalPress}
+            name="addusergroup"
+            size={26}
+            color="black"
+          />
+        </View>
+      ),
+    });
+  }, []);
+
   return (
     <View style={{ flex: 1, position: 'relative' }}>
-      {/* <Pressable onPress={navigation.navigate('Friends')}>
-        <Text>ChatGroupSreen</Text>
-      </Pressable> */}
-      <View style={styles.abc}></View>
+      <ModalGroupChat onModal={onModal} setOnMadal={setOnMadal} userData={userData}/>
     </View>
   );
 };
@@ -21,22 +55,10 @@ const ChatGroupSreen = () => {
 export default ChatGroupSreen;
 
 const styles = StyleSheet.create({
-  headerNav: {
-    margin: 0,
-    padding: 0,
-    // flex: 1,
-    width: fullwidth,
+  headerNavTitle: {
+    flex: 1,
+    gap: 8,
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    backgroundColor: '#ccc',
-  },
-  abc: {
-    // zIndex: 999,
-    position: 'absolute',
-    backgroundColor: '#ccc',
-    width: '100%',
-    height: '20%',
-    // top: -10,
-    // transform: [{ translateY: -100 }],
+    alignItems: 'center',
   },
 });

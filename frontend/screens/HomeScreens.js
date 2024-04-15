@@ -24,15 +24,11 @@ const HomeScreeens = () => {
 
   const handlePresentModalPress = () => {
     setOnMadal(true);
-    console.log('dsj');
   };
 
   useEffect(() => {
     navigation.setOptions({
       headerTitle: '',
-      headerStyle: {
-        zIndex: 1, // Đặt zIndex ở mức cao nhất
-      },
       headerLeft: () => (
         <View style={styles.headerNavTitle}>
           <Text
@@ -149,24 +145,6 @@ const HomeScreeens = () => {
     }, [])
   );
 
-  // const fadeAnim = useRef(new Animated.Value(0)).current; // Initial value for opacity: 0
-
-  // const showContent = () => {
-  //   return Animated.timing(fadeAnim, {
-  //     toValue: 1,
-  //     duration: 250,
-  //     easing: Easing.ease,
-  //     useNativeDriver: false,
-  //   }).start(() => {});
-  // };
-  // useEffect(() => {
-  //   if (onModal) {
-  //     showContent();
-  //   } else {
-  //     fadeAnim.setValue(0);
-  //   }
-  // }, [onModal]);
-
   return (
     <>
       <View style={{ backgroundColor: '#fff', flex: 1 }}>
@@ -176,23 +154,10 @@ const HomeScreeens = () => {
       </View>
       <Setting
         userData={userData}
-        onModal={onModal}
         setuserData={setuserData}
+        onModal={onModal}
         setOnMadal={setOnMadal}
       ></Setting>
-      {/* {onModal ? (
-        <Animated.View
-          style={[
-            styles.blur,
-            {
-              height: fadeAnim.interpolate({
-                inputRange: [0, 1],
-                outputRange: [100, 2000],
-              }),
-            },
-          ]}
-        ></Animated.View>
-      ) : null} */}
     </>
   );
 };
@@ -220,8 +185,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: fullwidth,
     bottom: 0,
-    // elevation: 99,
-    // zIndex: 99,
     backgroundColor: 'rgba(0, 0, 0, 0.2)',
   },
 });

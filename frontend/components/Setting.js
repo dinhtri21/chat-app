@@ -1,36 +1,19 @@
-import React, {
-  useCallback,
-  useMemo,
-  useRef,
-  useContext,
-  useState,
-  useEffect,
-} from 'react';
+import React, { useMemo, useRef, useEffect } from 'react';
 import { Image, TouchableOpacity } from 'react-native';
-import { UserType } from '../UserContext';
-import { FontAwesome6 } from '@expo/vector-icons';
 import { View, Text, StyleSheet, Button, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import {
   BottomSheetModal,
   BottomSheetView,
   useBottomSheetTimingConfigs,
-  BottomSheetBackdrop,
+   
 } from '@gorhom/bottom-sheet';
-import { Ionicons } from '@expo/vector-icons';
-import { Feather } from '@expo/vector-icons';
 import { AntDesign } from '@expo/vector-icons';
 import { Fontisto } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Dimensions } from 'react-native';
 import { Easing } from 'react-native-reanimated';
-import { EvilIcons } from '@expo/vector-icons';
-
-var width = Dimensions.get('window').width; //full width
-var height = Dimensions.get('window').height; //full height
 
 const Setting = ({ userData, setuserData, onModal, setOnMadal }) => {
-  console.log(userData);
   const navigation = useNavigation();
   const bottomSheetModalRef = useRef(null);
   const snapPoints = useMemo(() => ['50%', '39%'], []);

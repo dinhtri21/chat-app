@@ -14,8 +14,7 @@ import { UserType } from '../UserContext';
 import axios, { CancelToken } from 'axios';
 import User from '../components/User';
 import { socket } from '../socket';
-import { Ionicons } from '@expo/vector-icons';
-import { MaterialIcons } from '@expo/vector-icons';
+
 
 const HomeScreen = () => {
   const cancelTokenSource = CancelToken.source();
@@ -143,9 +142,7 @@ const HomeScreen = () => {
       }
     });
     socket.on('friendRequestAccepted', (data) => {
-      console.log(data);
       if (data.status == 'success') {
-        console.log('djhsjhdjh');
         fetchUsers();
         getListFriends();
         getListSentFriendRequests();
