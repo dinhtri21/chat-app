@@ -269,7 +269,6 @@ const ChatScreen = () => {
     return (
       <View
         style={styles.imageItemContainer}
-        // onPress={() => handleImagePress(item)}
       >
         <Pressable
           style={styles.deleteIconImage}

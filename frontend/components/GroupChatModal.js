@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import {
   BottomSheetView,
   BottomSheetModal,
@@ -9,17 +9,20 @@ import { Easing } from 'react-native-reanimated';
 import axios, { CancelToken } from 'axios';
 import UserChatGroupModal from './UserChatGroupModal';
 import { FlatList, ScrollView, TextInput } from 'react-native-gesture-handler';
+import { socket } from '../socket';
 
 const ModalGroupChat = ({ userData, onModal, setOnMadal }) => {
   const cancelTokenSource = CancelToken.source();
   const [listFriends, setListFriends] = useState([]);
   const [selectedFriends, setSelectedFriends] = useState([]);
+  const [groupName, setGroupName] = useState('');
   const bottomSheetRef = useRef(null);
   const snapPoints = useMemo(() => ['60%', '60%'], []);
   const animationConfigs = useBottomSheetTimingConfigs({
     duration: 5000,
     easing: Easing.ease,
   });
+
   useEffect(() => {
     if (onModal) {
       bottomSheetRef.current?.present();
@@ -62,9 +65,8 @@ const ModalGroupChat = ({ userData, onModal, setOnMadal }) => {
     }
   };
 
-  console.log(selectedFriends);
   useEffect(() => {
-    getListFriend();
+    getListFriend();  
     return () => {
       cancelTokenSource.cancel();
     };
@@ -83,6 +85,31 @@ const ModalGroupChat = ({ userData, onModal, setOnMadal }) => {
       <Text style={{ fontSize: 16 }}>{item.name}</Text>
     </View>
   );
+  // Tạo nhóm
+  const createJoinMultiMemberGroup = async () => {
+    const groupId = selectedFriends.map((user) => user._id);
+    await groupId.push(userData._id);
+    socket.emit('joinMultiMemberGroup', {
+      groupName: groupName,
+      listUserId: groupId,
+    });
+  };
+
+  useEffect(() => {
+    socket.on('joinMultiMemberGroup', (data) => {
+      if (data.status == 'success') {
+        setSelectedFriends([]);
+        setGroupName('');
+        Alert.alert('Tạo nhóm thành công!');
+      } else {
+        Alert.alert('Tạo nhóm thất bại!');
+      }
+    });
+
+    return () => {
+      socket.off("joinMultiMemberGroup");
+    };
+  }, []);
   return (
     <BottomSheetModal
       ref={bottomSheetRef}
@@ -107,7 +134,12 @@ const ModalGroupChat = ({ userData, onModal, setOnMadal }) => {
           }}
         >
           <Text style={styles.flatListTitle}>Tên nhóm:</Text>
-          <TextInput style={{ fontSize: 16, fontWeight: '400', flex: 1 }} placeholder="..." />
+          <TextInput
+            value={groupName}
+            onChangeText={(text) => setGroupName(text)}
+            style={{ fontSize: 16, fontWeight: '400', flex: 1 }}
+            placeholder="..."
+          />
         </View>
         <View style={styles.flatListContainer}>
           <Text style={styles.flatListTitle}>
@@ -145,7 +177,10 @@ const ModalGroupChat = ({ userData, onModal, setOnMadal }) => {
             })}
         </ScrollView>
         {selectedFriends.length >= 2 ? (
-          <TouchableOpacity style={styles.createGroupBtn}>
+          <TouchableOpacity
+            onPress={createJoinMultiMemberGroup}
+            style={styles.createGroupBtn}
+          >
             <Text style={{ color: '#fff', fontSize: 16 }}>Tạo nhóm chat</Text>
           </TouchableOpacity>
         ) : null}

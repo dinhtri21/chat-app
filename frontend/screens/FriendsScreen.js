@@ -157,7 +157,6 @@ const HomeScreen = () => {
     };
   }, []);
 
-  useEffect(() => {}, []);
   return (
     <ScrollView
       style={styles.friendContainer}

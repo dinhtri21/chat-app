@@ -1,4 +1,12 @@
-import { StyleSheet, Text, View, Image, Animated, Easing } from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  View,
+  Image,
+  Animated,
+  Easing,
+  ScrollView,
+} from 'react-native';
 import React, { useEffect, useLayoutEffect, useState, useRef } from 'react';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import axios, { CancelToken } from 'axios';
@@ -148,9 +156,11 @@ const HomeScreeens = () => {
   return (
     <>
       <View style={{ backgroundColor: '#fff', flex: 1 }}>
-        {listGroup.map((group, index) => {
-          return <UserChat key={index} item={group} />;
-        })}
+        <ScrollView>
+          {listGroup.map((group, index) => {
+            return <UserChat key={index} item={group} />;
+          })}
+        </ScrollView>
       </View>
       <Setting
         userData={userData}
