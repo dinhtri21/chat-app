@@ -9,10 +9,6 @@ exports.joinGroup = async (data, socket, io) => {
 };
 exports.addFriend = async (data, socket, io) => {
   try {
-    console.log(
-      `User ${data.senderId} đã gửi yêu kết bạn đến ${data.receiverId} .`
-    );
-
     // Tìm thông tin user gửi yêu cầu kết bạn
     const sender = await User.findById(data.senderId);
     if (!sender) {
@@ -70,7 +66,6 @@ exports.addFriend = async (data, socket, io) => {
         success: true,
         groupId: newGroup._id.toString(),
         senderId: sender._id,
-
         receiverId: receiver._id,
       });
     } else {
@@ -86,7 +81,6 @@ exports.addFriend = async (data, socket, io) => {
     });
   }
 };
-
 exports.acceptFriend = async (data, socket, io) => {
   try {
     // Tìm thông tin user chấp nhận kết bạn
@@ -145,5 +139,52 @@ exports.acceptFriend = async (data, socket, io) => {
     }
   } catch (error) {
     console.error("Lỗi hàm acceptFriend socket io: " + error);
+  }
+};
+
+exports.joinMultiMemberGroup = async (data, socket, io) => {
+  try {
+    const listUserId = data.listUserId;
+    const groupName = data.groupName;
+    console.log(listUserId);
+    console.log(groupName);
+    // Tạo một nhóm mới
+    const newGroup = await new Group({
+      name: groupName ? groupName : "Group_" + Date.now(), // Đặt tên cho nhóm theo timestamp
+      members: listUserId,
+    });
+    await newGroup.save();
+    // Cập nhật danh sách groups của tất cả các user
+    for (const userId of listUserId) {
+      const user = await User.findById(userId);
+      if (user) {
+        user.groups.push(newGroup._id);
+        await user.save();
+      }
+    }
+    // socket.emit("multiMemberGroupCreated", {
+    //   status: "error",
+    //   message: "Đã xảy ra lỗi khi tạo nhóm",
+    // });
+    socket.broadcast.emit('multiMemberGroupCreated',  {
+      status: "success",
+      message: `Nhóm mới đã được tạo`,
+      newGroup: newGroup.members,
+    });
+
+    socket.emit("joinMultiMemberGroup", {
+      status: "success",
+      message: `Tạo thành công!`,
+    });
+    console.log("Vừa tạo group: " + newGroup);
+  } catch (error) {
+    console.error(
+      "Lỗi khi tạo nhóm và thêm thành viên vào nhóm hàm joinMultiMemberGroup: " +
+        error
+    );
+    socket.emit("joinMultiMemberGroup", {
+      status: "error",
+      message: "Đã xảy ra lỗi khi tạo nhóm",
+    });
   }
 };

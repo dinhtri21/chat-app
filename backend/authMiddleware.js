@@ -7,7 +7,6 @@ const authenticateToken = async (req, res, next) => {
       .status(401)
       .json({ message: "Access denied. No token provided." });
   }
-
   try {
     const decoded = await jwt.verify(token.split(" ")[1], process.env.JWT_SECRET);
     req.user = decoded; // Lưu thông tin người dùng đã được xác thực vào đối tượng req
