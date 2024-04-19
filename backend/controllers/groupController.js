@@ -12,9 +12,10 @@ exports.getAllGroup = async (req, res) => {
           path: "members",
           select: "name email image", // Chỉ lấy các trường name, email, image của thành viên
         })
-        .select("name members")
+        .select("name")
         .lean();
       return {
+        _id: groupWithMembers._id,
         group: groupWithMembers.name,
         members: groupWithMembers.members,
       };
@@ -24,7 +25,10 @@ exports.getAllGroup = async (req, res) => {
 
     const groupMembersAddHostImage = await groupMembers.map((group) => {
       const addHostImage = group.members.map((member) => {
-        return { ...member, image: `${process.env.IMG_URL}/avatar/${member.image}` };
+        return {
+          ...member,
+          image: `${process.env.IMG_URL}/avatar/${member.image}`,
+        };
       });
       return { ...group, members: addHostImage };
     });
@@ -43,21 +47,25 @@ exports.getMultiMemberGroup = async (req, res) => {
     const user = await User.findById(userId).populate("groups");
 
     // Lọc nhóm có ít nhất 2 thành viên
-    const groupsWithMultipleMembers = user.groups.filter(group => group.members.length > 2);
+    const groupsWithMultipleMembers = user.groups.filter(
+      (group) => group.members.length > 2
+    );
 
-    const groupDetailsPromises = groupsWithMultipleMembers.map(async (group) => {
-      const groupWithMembers = await Group.findById(group._id)
-        .populate({
-          path: "members",
-          select: "name email image", 
-        })
-        .select("name members")
-        .lean();
-      return {
-        group: groupWithMembers.name,
-        members: groupWithMembers.members,
-      };
-    });
+    const groupDetailsPromises = groupsWithMultipleMembers.map(
+      async (group) => {
+        const groupWithMembers = await Group.findById(group._id)
+          .populate({
+            path: "members",
+            select: "name email image",
+          })
+          .select("name members")
+          .lean();
+        return {
+          group: groupWithMembers.name,
+          members: groupWithMembers.members,
+        };
+      }
+    );
 
     // Chờ tất cả các Promise hoàn thành
     const groupDetails = await Promise.all(groupDetailsPromises);
@@ -65,7 +73,10 @@ exports.getMultiMemberGroup = async (req, res) => {
     // Thêm đường dẫn hình ảnh cho các thành viên
     const groupDetailsWithHostImage = groupDetails.map((group) => {
       const membersWithHostImage = group.members.map((member) => {
-        return { ...member, image: `${process.env.IMG_URL}/avatar/${member.image}` };
+        return {
+          ...member,
+          image: `${process.env.IMG_URL}/avatar/${member.image}`,
+        };
       });
       return { ...group, members: membersWithHostImage };
     });
@@ -76,4 +87,4 @@ exports.getMultiMemberGroup = async (req, res) => {
     console.error(err);
     res.status(500).json({ message: "Internal server error" });
   }
- }
+};

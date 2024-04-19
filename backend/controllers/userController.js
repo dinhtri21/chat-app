@@ -108,7 +108,7 @@ exports.getUserByID = async (req, res) => {
     }
     res.status(200).json({ user });
   } catch (err) {
-    console.error("Error fetching user:", err);
+    console.error("Lỗi tìm kiếm getUserByID :", err);
     res.status(500).json({ error: "Server error" });
   }
 };

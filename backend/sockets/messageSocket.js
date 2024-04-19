@@ -3,6 +3,7 @@ const Group = require("../models/group");
 const User = require("../models/user");
 const path = require("path");
 const fs = require("fs");
+const mongoose = require("mongoose");
 
 const saveBase64Image = (base64String, mimeType) => {
   try {
@@ -18,8 +19,11 @@ const saveBase64Image = (base64String, mimeType) => {
 
 // Hàm tạo mới tin nhắn //
 const createNewMessage = async (data, imageUrl) => {
-  const { senderId, recepientId, messageType, message, timeStamp } = data;
+  const { senderId, recepientId, messageType, message, timeStamp, groupId } =
+    data;
+
   const newMessage = new Message({
+    groupId,
     senderId,
     recepientId,
     messageType,
@@ -43,7 +47,7 @@ exports.sendMessage = async (data, socket, io) => {
 
     // Tìm nhóm
     const commonGroup = await Group.findOne({
-      members: { $all: [messageData.senderId, messageData.recepientId] },
+      _id: data.groupId,
     });
 
     if (!commonGroup) {

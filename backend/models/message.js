@@ -1,14 +1,20 @@
 const mongoose = require("mongoose");
 
 const messageSchema = new mongoose.Schema({
+  groupId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Group",
+  },
   senderId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
   },
-  recepientId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-  },
+  recepientId: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+  ],
   messageType: {
     type: String,
     enum: ["text", "image"],
