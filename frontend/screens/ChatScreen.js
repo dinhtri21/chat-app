@@ -11,7 +11,7 @@ import {
   Pressable,
   FlatList,
   RefreshControl,
-} from "react-native";
+} from 'react-native';
 
 import React, {
   useState,
@@ -19,29 +19,29 @@ import React, {
   useContext,
   useRef,
   useLayoutEffect,
-} from "react";
-import { useNavigation, useRoute } from "@react-navigation/native";
-import axios, { CancelToken } from "axios";
-import { Ionicons } from "@expo/vector-icons";
-import { Entypo } from "@expo/vector-icons";
-import { UserType } from "../UserContext";
-import { socket } from "../socket";
-import { AntDesign } from "@expo/vector-icons";
-import { EvilIcons } from "@expo/vector-icons";
-import * as ImagePicker from "expo-image-picker";
-import * as FileSystem from "expo-file-system";
-import { Dimensions } from "react-native";
-var width = Dimensions.get("window").width; //full width
-var height = Dimensions.get("window").height; //full height
+} from 'react';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import axios, { CancelToken } from 'axios';
+import { Ionicons } from '@expo/vector-icons';
+import { Entypo } from '@expo/vector-icons';
+import { UserType } from '../UserContext';
+import { socket } from '../socket';
+import { AntDesign } from '@expo/vector-icons';
+import { EvilIcons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
+import * as FileSystem from 'expo-file-system';
+import { Dimensions } from 'react-native';
+var width = Dimensions.get('window').width; //full width
+var height = Dimensions.get('window').height; //full height
 
 const ChatScreen = () => {
   const route = useRoute();
-  const { recepientId } = route.params;
+  const { recepientIds, groupId, item } = route.params;
   const navigation = useNavigation();
   const [recepientData, setRecepientData] = useState({});
   const { userData, setuserData } = useContext(UserType);
   const [messages, setMessages] = useState([]);
-  const [inputMessage, setInputMessage] = useState("");
+  const [inputMessage, setInputMessage] = useState('');
   const cancelTokenSource = CancelToken.source();
   const scrollViewRef = useRef();
   const [selectedImages, setSelectedImages] = useState([]);
@@ -53,7 +53,7 @@ const ChatScreen = () => {
 
   useEffect(() => {
     navigation.setOptions({
-      headerTitle: "",
+      headerTitle: '',
       headerLeft: () => (
         <View style={styles.headerContainer}>
           <Ionicons
@@ -71,10 +71,10 @@ const ChatScreen = () => {
             ) : (
               <Image
                 style={styles.headerInfoImage}
-                source={require("../assets/default-profile-picture-avatar.jpg")}
+                source={require('../assets/default-profile-picture-avatar.jpg')}
               />
             )}
-            <Text style={styles.headerNavTitle}>{recepientData?.name}</Text>
+            <Text style={styles.headerNavTitle}>{item?.group}</Text>
           </View>
         </View>
       ),
@@ -85,7 +85,7 @@ const ChatScreen = () => {
   const fetchRecepientData = async () => {
     try {
       const res = await axios.get(
-        `${process.env.EXPRESS_API_URL}/user/user/${recepientId}`,
+        `${process.env.EXPRESS_API_URL}/user/user/${recepientIds[0]}`,
         {
           cancelToken: cancelTokenSource.token,
         }
@@ -93,15 +93,16 @@ const ChatScreen = () => {
       if (res.status == 200) {
         const data = res.data.user;
         setRecepientData(data);
+        console.log(data);
       }
     } catch (error) {
-      console.log("Lỗi hàm fetchRecepientData: ", error);
+      console.log('Lỗi hàm fetchRecepientData: ', error);
     }
   };
   const fetchMessages = async () => {
     try {
       const response = await axios.get(
-        `${process.env.EXPRESS_API_URL}/messages/getMessages/${userData._id}/${recepientId}`,
+        `${process.env.EXPRESS_API_URL}/messages/getMessages/${userData._id}/${groupId}`,
         {
           cancelToken: cancelTokenSource.token,
           params: { offset, limit },
@@ -111,7 +112,7 @@ const ChatScreen = () => {
         return response.data.messages;
       }
     } catch (error) {
-      console.log("Lỗi hàm fetchMessages:", error);
+      console.log('Lỗi hàm fetchMessages:', error);
     }
   };
 
@@ -152,66 +153,80 @@ const ChatScreen = () => {
   };
 
   const sendImageMessage = async (imageData) => {
+    const newGroupId = await recepientIds
+      .filter((rep) => rep._id !== userData._id)
+      .map((rep) => rep._id);
     try {
       const imageBase64 = await FileSystem.readAsStringAsync(imageData.uri, {
         encoding: FileSystem.EncodingType.Base64,
       });
-      socket.emit("sendMessage", {
+      socket.emit('sendMessage', {
+        groupId: groupId,
         senderId: userData._id,
-        recepientId: recepientId,
-        messageType: "image",
-        message: "",
+        recepientId: newGroupId,
+        messageType: 'image',
+        message: '',
         imageBase64: imageBase64,
         mimeType: imageData.mimeType,
         timeStamp: new Date().toISOString(),
       });
       setSelectedImages([]);
     } catch (error) {
-      console.error("Error sending image message:", error);
+      console.error('Error sending image message:', error);
     }
   };
 
   const sendTextMessage = async () => {
+    const newGroupId = await recepientIds
+      .filter((rep) => rep._id !== userData._id)
+      .map((rep) => rep._id);
     try {
-      if (inputMessage.trim() !== "") {
-        socket.emit("sendMessage", {
+      if (inputMessage.trim() !== '') {
+        socket.emit('sendMessage', {
+          groupId: groupId,
           senderId: userData._id,
-          recepientId: recepientId,
-          messageType: "text",
+          recepientId: newGroupId,
+          messageType: 'text',
           message: inputMessage.trim(),
-          imageBase64: "",
-          mimeType: "",
+          imageBase64: '',
+          mimeType: '',
           timeStamp: new Date().toISOString(),
         });
-        setInputMessage("");
+        setInputMessage('');
       }
     } catch (error) {
-      console.log("Lỗi khi gửi tin nhắn văn bản:", error);
+      console.log('Lỗi khi gửi tin nhắn văn bản:', error);
     }
   };
 
   // Render tin nhắn
   const renderMessageBubble = (message, index) => {
-    const isUserMessage = message.senderId === userData._id;
+    const isUserMessage = message.senderId._id === userData._id;
     return (
       <View
         key={index}
         style={[
           styles.messageBubble,
-          { alignSelf: isUserMessage ? "flex-end" : "flex-start" },
+          { alignSelf: isUserMessage ? 'flex-end' : 'flex-start' },
         ]}
       >
-        {message.messageType == "text" ? (
+        {!isUserMessage ? (
+          <Image
+            style={styles.imageAvt}
+            source={{ uri: message.senderId.image }}
+          />
+        ) : null}
+        {message.messageType == 'text' ? (
           <Text
             style={{
-              color: isUserMessage ? "#fff" : "#000",
-              backgroundColor: isUserMessage ? "#4a86f7" : "#fff",
-              ...styles.imageText,
+              color: isUserMessage ? '#fff' : '#000',
+              backgroundColor: isUserMessage ? '#4a86f7' : '#fff',
+              ...styles.messageText,
             }}
           >
             {message.message}
           </Text>
-        ) : message.messageType == "image" ? (
+        ) : message.messageType == 'image' ? (
           <View style={styles.imageMessage}>
             <Image
               style={styles.imageMessageSrc}
@@ -236,7 +251,7 @@ const ChatScreen = () => {
       await loadMoreMessages();
     } else {
       setRefreshing(false);
-      console.log("Hết tin nhắn");
+      console.log('Hết tin nhắn');
     }
   };
 
@@ -246,8 +261,8 @@ const ChatScreen = () => {
     (async () => {
       const { status } =
         await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (status !== "granted") {
-        alert("Quyền truy cập thư viện ảnh bị từ chối!");
+      if (status !== 'granted') {
+        alert('Quyền truy cập thư viện ảnh bị từ chối!');
       }
     })();
   }, []);
@@ -267,9 +282,7 @@ const ChatScreen = () => {
   };
   const renderImageItem = ({ item }) => {
     return (
-      <View
-        style={styles.imageItemContainer}
-      >
+      <View style={styles.imageItemContainer}>
         <Pressable
           style={styles.deleteIconImage}
           onPress={() => handleDeleteImage(item)}
@@ -304,10 +317,14 @@ const ChatScreen = () => {
   }, []);
 
   useEffect(() => {
-    socket.on("newMessage", (data) => {
+    socket.on('newMessage', (data) => {
+      console.log(data);
       setMessages((prevMessages) => [...prevMessages, data.message]);
       scrollToBottom();
     });
+    return () => {
+      socket.off('newMessage');
+    };
   }, []);
 
   return (
@@ -320,7 +337,7 @@ const ChatScreen = () => {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            colors={["#007aff"]}
+            colors={['#007aff']}
             progressBackgroundColor="#fff"
           />
         }
@@ -332,7 +349,7 @@ const ChatScreen = () => {
 
       {/* Thanh input */}
       <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.inputContainer}
       >
         <View style={styles.inputTop}>
@@ -372,13 +389,13 @@ export default ChatScreen;
 
 const styles = StyleSheet.create({
   headerContainer: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 8,
   },
   headerInfo: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 8,
   },
   headerInfoImage: {
@@ -388,7 +405,7 @@ const styles = StyleSheet.create({
   },
   headerNavTitle: {
     fontSize: 16,
-    fontWeight: "500",
+    fontWeight: '500',
   },
   //
   container: {
@@ -400,9 +417,19 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     flexGrow: 1, // Kích thước nội dung tăng dần để cho phép cuộn
-    justifyContent: "flex-end", // Đảm bảo tin nhắn mới luôn nằm ở cuối
+    justifyContent: 'flex-end', // Đảm bảo tin nhắn mới luôn nằm ở cuối
   },
-  messageBubble: {},
+  messageBubble: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginHorizontal: 12,
+  },
+
+  imageAvt: {
+    height: 28,
+    width: 28,
+    borderRadius: 28,
+  },
 
   imageMessage: {
     marginVertical: 10,
@@ -410,72 +437,73 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   imageMessageSrc: {
-    resizeMode: "cover",
+    resizeMode: 'cover',
     width: 200,
     height: 200,
     borderRadius: 10,
-    backgroundColor: "#fff",
+    backgroundColor: '#fff',
   },
-  imageText: {
-    padding: 10,
+  messageText: {
+    paddingHorizontal: 10,
+    paddingVertical: 8,
     marginVertical: 10,
-    marginHorizontal: 18,
     borderRadius: 16,
+    marginLeft: 10,
   },
   inputContainer: {
-    backgroundColor: "#fff",
-    flexDirection: "column",
+    backgroundColor: '#fff',
+    flexDirection: 'column',
   },
   input: {
     borderRadius: 18,
-    borderColor: "#dddddd",
+    borderColor: '#dddddd',
     borderWidth: 1,
     paddingHorizontal: 8,
     paddingVertical: 4,
     flex: 1,
   },
   inputTop: {
-    flexDirection: "row",
+    flexDirection: 'row',
     gap: 5,
   },
   inputBottom: {
-    alignItems: "center",
-    flexDirection: "row",
+    alignItems: 'center',
+    flexDirection: 'row',
     gap: 8,
     paddingHorizontal: 12,
     paddingVertical: 12,
     borderTopWidth: 1,
-    borderTopColor: "#dddddd",
+    borderTopColor: '#dddddd',
   },
   flatListImagesPicker: {
     padding: 8,
     borderTopWidth: 1,
-    borderTopColor: "#dddddd",
+    borderTopColor: '#dddddd',
   },
   imageItemContainer: {
     margin: 4,
-    position: "relative",
+    position: 'relative',
   },
   imagePicker: {
     height: 70,
     width: 70,
-    resizeMode: "cover",
+    resizeMode: 'cover',
     marginHorizontal: 2,
     marginVertical: 2,
     borderRadius: 8,
   },
   deleteIconImage: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    position: "absolute",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'absolute',
     top: -5,
     right: -5,
     zIndex: 99,
     height: 22,
     width: 22,
-    backgroundColor: "#fff",
-    overflow: "hidden",
+    backgroundColor: '#fff',
+    overflow: 'hidden',
     opacity: 0.6,
     borderRadius: 50,
   },

@@ -17,17 +17,25 @@ const MultiMemberGroup = ({ item }) => {
   }
 
   return (
-    <Pressable style={[styles.containerUserChat]}>
+    <Pressable
+      style={[styles.containerUserChat]}
+      onPress={() => {
+        navigation.navigate('Messages', {
+          recepientIds: item.members,
+          groupId: item._id,
+          item: item,
+        });
+      }}
+    >
       <View style={styles.containerInfo}>
         <Image
           defaultSource={require('../assets/default-profile-picture-avatar.jpg')}
           style={styles.infoImg}
           source={require('../assets/default-profile-picture-avatar.jpg')}
         />
-         <View style={styles.infoNameMessLast}>
-              <Text style={styles.infoName}>{item.group}</Text>
-            
-            </View>
+        <View style={styles.infoNameMessLast}>
+          <Text style={styles.infoName}>{item.group}</Text>
+        </View>
       </View>
     </Pressable>
   );

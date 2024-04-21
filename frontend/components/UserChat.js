@@ -9,7 +9,6 @@ import MultiMemberGroup from './MultiMemberGroup';
 const UserChat = ({ item }) => {
   const { userData, setuserData } = useContext(UserType);
   const navigation = useNavigation();
-  console.log(item?.members.length);
   let formattedTime = null;
   // Định dạng thời gian theo múi giờ Việt Nam
   if (item.latestMessage) {
@@ -26,7 +25,10 @@ const UserChat = ({ item }) => {
         <Pressable
           key={index}
           onPress={() => {
-            navigation.navigate('Messages', { recepientId: member._id });
+            navigation.navigate('Messages', {
+              recepientIds: item.members,
+              groupId: item._id,
+            });
           }}
           style={[styles.containerUserChat]}
         >

@@ -7,7 +7,7 @@ import ModalGroupChat from '../components/GroupChatModal';
 import { UserType } from '../UserContext';
 import axios, { CancelToken } from 'axios';
 import MultiMemberGroup from '../components/MultiMemberGroup';
-import UserChat from '../components/UserChat'
+import UserChat from '../components/UserChat';
 
 var fullwidth = Dimensions.get('window').width; //full width
 var fullheight = Dimensions.get('window').height; //full height
@@ -81,8 +81,8 @@ const ChatGroupSreen = () => {
         userData={userData}
       />
       {multiMemberGroup &&
-         multiMemberGroup.map((group) => {
-          return <MultiMemberGroup item={group}/>; 
+        multiMemberGroup.map((group) => {
+          return <UserChat item={group} />;
         })}
     </View>
   );
