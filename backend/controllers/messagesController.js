@@ -2,14 +2,18 @@ const message = require("../models/message");
 
 exports.getMessages = async (req, res) => {
   try {
-    const {userId, groupId} = req.params;
-    const {offset, limit } = req.query;
-    
+    const { userId, groupId } = req.params;
+    const { offset, limit } = req.query;
+
     const messages = await message
-    .find({ groupId: groupId }) 
-    .sort({ timeStamp: -1 })
-    .skip(parseInt(offset))
-    .limit(parseInt(limit));
+      .find({ groupId: groupId })
+      .sort({ timeStamp: -1 })
+      .skip(parseInt(offset))
+      .limit(parseInt(limit))
+      .populate({
+        path: "senderId",
+        select: "name email image",
+      });
 
     if (messages && messages.length > 0) {
       messages.forEach((message) => {
@@ -17,22 +21,21 @@ exports.getMessages = async (req, res) => {
           message.imageUrl = `${process.env.IMG_URL}/${message.imageUrl}`;
         }
       });
+      messages.forEach((message) => {
+        if (
+          message.senderId &&
+          !message.senderId.image.includes(process.env.IMG_URL)
+        ) {
+          message.senderId.image = `${process.env.IMG_URL}/avatar/${message.senderId.image}`;
+        }
+      });
       // Sắp xếp lại dữ liệu theo thời gian tăng dần
       const sortedMessages = messages.sort(
         (a, b) => new Date(a.timeStamp) - new Date(b.timeStamp)
       );
-
-      // Gửi dữ liệu đã sắp xếp cho client
       res.status(200).json({ messages: sortedMessages });
     } else {
-      // res.status(200).json({ messages: messages });
-      // Sắp xếp lại dữ liệu theo thời gian tăng dần
-      const sortedMessages = messages.sort(
-        (a, b) => new Date(a.timeStamp) - new Date(b.timeStamp)
-      );
-
-      // Gửi dữ liệu đã sắp xếp cho client
-      res.status(200).json({ messages: sortedMessages });
+      res.status(200).json({ messages: [] });
     }
   } catch (error) {
     console.error("Error fetching messages:", error);

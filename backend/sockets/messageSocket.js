@@ -45,7 +45,19 @@ exports.sendMessage = async (data, socket, io) => {
     // Tạo mới tin nhắn
     const newMessageJSON = await createNewMessage(messageData, imageUrl);
 
-    // Tìm nhóm
+    // Thêm senderId
+    const sender = await User.findById(newMessageJSON.senderId).select(
+      "name email image"
+    );
+    if (!sender) {
+      throw new Error("User not found");
+    }
+
+    newMessageJSON.senderId = sender;
+    // Thêm url ảnh avt
+    newMessageJSON.senderId.image = `${process.env.IMG_URL}/avatar/${newMessageJSON.senderId.image}`;
+
+    console.log(newMessageJSON);
     const commonGroup = await Group.findOne({
       _id: data.groupId,
     });
