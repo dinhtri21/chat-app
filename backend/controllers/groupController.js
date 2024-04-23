@@ -88,3 +88,19 @@ exports.getMultiMemberGroup = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+exports.getDataUsersInGroup = async (req, res) => {
+  try {
+    const { groupId } = req.params;
+    const dataUser = await Group.findById(groupId)
+      .populate({
+        path: "members",
+        select: "name email image",
+      })
+      .lean();
+
+    res.status(200).json(dataUser);
+  } catch (error) {
+    console.log("Lỗi hàm getDataUsersInGroup: " + error);
+  }
+};

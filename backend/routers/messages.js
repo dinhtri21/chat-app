@@ -6,6 +6,6 @@ const {
 } = require("../controllers/messagesController");
 
 router.get("/getMessages/:senderId/:groupId", getMessages);
-router.get("/getLatestMessage/:userId/:recepientId", getLatestMessage);
+router.get("/getLatestMessage/:groupId", getLatestMessage);
 
 module.exports = router;

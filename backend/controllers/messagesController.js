@@ -44,27 +44,18 @@ exports.getMessages = async (req, res) => {
 };
 exports.getLatestMessage = async (req, res) => {
   try {
-    const { userId, recepientId } = req.params;
+    const { groupId } = req.params;
     const latestMessage = await message
-      .findOne({
-        $or: [
-          { $and: [{ senderId: userId }, { recepientId: recepientId }] },
-          { $and: [{ senderId: recepientId }, { recepientId: userId }] },
-        ],
-      })
+      .findOne({ groupId })
       .sort({ timeStamp: -1 });
-    if (latestMessage && latestMessage.messageType == "image") {
+
+    if (latestMessage && latestMessage.messageType === "image") {
       latestMessage.imageUrl = `${process.env.IMG_URL}/${latestMessage.imageUrl}`;
-      res.status(200).json({ messages: latestMessage });
-    } else if (latestMessage && latestMessage.messageType == "text") {
-      res.status(200).json({ messages: latestMessage });
-    } else {
-      res.status(200).json({ messages: null });
     }
+
+    res.status(200).json({ message: latestMessage || null });
   } catch (error) {
     console.error("Lỗi khi lấy tin nhắn mới nhất:", error);
-    res
-      .status(500)
-      .json({ error: "Đã có lỗi xảy ra khi lấy tin nhắn mới nhất" });
+    res.status(500).json({ error: "Đã có lỗi xảy ra khi lấy tin nhắn mới nhất" });
   }
 };
