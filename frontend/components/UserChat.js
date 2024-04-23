@@ -17,65 +17,62 @@ const UserChat = ({ item }) => {
       .format('HH:mm'); // Định dạng chỉ giờ: phút
   }
 
-  return item?.members.length > 2 ? (
-    <MultiMemberGroup item={item} />
-  ) : (
-    item?.members.map((member, index) => {
-      return userData._id !== member._id ? (
-        <Pressable
-          key={index}
-          onPress={() => {
-            navigation.navigate('Messages', {
-              recepientIds: item.members,
-              groupId: item._id,
-            });
-          }}
-          style={[styles.containerUserChat]}
-        >
-          <View style={styles.containerInfo}>
-            <Image
-              defaultSource={require('../assets/default-profile-picture-avatar.jpg')}
-              style={styles.infoImg}
-              source={{ uri: member.image }}
-            />
-            <View style={styles.infoNameMessLast}>
-              <Text style={styles.infoName}>{member.name}</Text>
-              {item?.latestMessage?.messageType == 'text' ? (
-                <Text
-                  ellipsizeMode="tail"
-                  numberOfLines={1}
-                  style={styles.infoLastMessage}
-                >
-                  {item.latestMessage.message}
-                </Text>
-              ) : item?.latestMessage?.messageType == 'image' ? (
-                <Text
-                  ellipsizeMode="tail"
-                  numberOfLines={1}
-                  style={styles.infoLastMessage}
-                >
-                  [Hình ảnh]
-                </Text>
-              ) : item?.latestMessage == null ? (
-                <Text
-                  ellipsizeMode="tail"
-                  numberOfLines={1}
-                  style={styles.infoLastMessage}
-                >
-                  Đã là bạn bè.
-                </Text>
-              ) : null}
-            </View>
-          </View>
-          <View style={styles.containerLastMessageTime}>
-            <Text style={styles.lastMessageTime}>
-              {formattedTime != null ? formattedTime : null}
+  return item.latestMessage ? (
+    <Pressable
+      onPress={() => {
+        navigation.navigate('Messages', {
+          item: item,
+        });
+      }}
+      style={[styles.containerUserChat]}
+    >
+      <View style={styles.containerInfo}>
+        <Image
+          style={styles.infoImg}
+          source={
+            item?.members.length > 2
+              ? require('../assets/groupIcon.png')
+              : { uri: item?.members[1].image }
+          }
+        />
+        <View style={styles.infoNameMessLast}>
+          <Text style={styles.infoName}>
+            {item?.members.length > 2 ? item.group : item.members[1].name}
+          </Text>
+          {item?.latestMessage?.messageType == 'text' ? (
+            <Text
+              ellipsizeMode="tail"
+              numberOfLines={1}
+              style={styles.infoLastMessage}
+            >
+              {item.latestMessage.message}
             </Text>
-          </View>
-        </Pressable>
-      ) : null;
-    })
-  );
+          ) : item?.latestMessage?.messageType == 'image' ? (
+            <Text
+              ellipsizeMode="tail"
+              numberOfLines={1}
+              style={styles.infoLastMessage}
+            >
+              [Hình ảnh]
+            </Text>
+          ) : item?.latestMessage == null ? (
+            <Text
+              ellipsizeMode="tail"
+              numberOfLines={1}
+              style={styles.infoLastMessage}
+            >
+              Đã là bạn bè.
+            </Text>
+          ) : null}
+        </View>
+      </View>
+      <View style={styles.containerLastMessageTime}>
+        <Text style={styles.lastMessageTime}>
+          {formattedTime != null ? formattedTime : null}
+        </Text>
+      </View>
+    </Pressable>
+  ) : null;
 };
 
 export default UserChat;
@@ -106,7 +103,7 @@ const styles = StyleSheet.create({
     height: 50,
     borderRadius: 25,
     resizeMode: 'cover',
-    backgroundColor: '#fff',
+    backgroundColor: 'rgba(0,0,0,0.03)',
   },
   infoName: {
     fontSize: 15,

@@ -87,15 +87,7 @@ const HomeScreeens = () => {
 
         const updatedList = await Promise.all(
           data.map(async (group) => {
-            let latestMessage = null;
-            await Promise.all(
-              group.members.map(async (member) => {
-                if (member._id != userData._id) {
-                  const recepientId = member._id;
-                  latestMessage = await getLatestMessage(group, recepientId);
-                }
-              })
-            );
+            const latestMessage = await getLatestMessage(group);
             return { ...group, latestMessage };
           })
         );
@@ -116,17 +108,17 @@ const HomeScreeens = () => {
       console.log('Lỗi hàm getAllGroup -- ' + error);
     }
   };
-  const getLatestMessage = async (group, recepientId) => {
+  const getLatestMessage = async (group) => {
     try {
       const res = await axios.get(
-        `${process.env.EXPRESS_API_URL}/messages/getLatestMessage/${userData._id}/${recepientId}`,
+        `${process.env.EXPRESS_API_URL}/messages/getLatestMessage/${group._id}`,
         {
           cancelToken: cancelTokenSource.token,
         }
       );
 
       if (res.status === 200) {
-        const newMessage = res.data.messages;
+        const newMessage = res.data.message;
         return newMessage;
       }
     } catch (err) {

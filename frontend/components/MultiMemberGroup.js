@@ -6,23 +6,21 @@ import { useContext } from 'react';
 import { UserType } from '../UserContext';
 
 const MultiMemberGroup = ({ item }) => {
-  const { userData, setuserData } = useContext(UserType);
+  // const { userData, setuserData } = useContext(UserType);
   const navigation = useNavigation();
-  let formattedTime = null;
+  // let formattedTime = null;
   // Định dạng thời gian theo múi giờ Việt Nam
-  if (item.latestMessage) {
-    formattedTime = moment(item?.latestMessage?.timeStamp)
-      .utcOffset('+0700')
-      .format('HH:mm'); // Định dạng chỉ giờ: phút
-  }
+  // if (item.latestMessage) {
+  //   formattedTime = moment(item?.latestMessage?.timeStamp)
+  //     .utcOffset('+0700')
+  //     .format('HH:mm'); // Định dạng chỉ giờ: phút
+  // }
 
   return (
     <Pressable
-      style={[styles.containerUserChat]}
+      style={styles.containerUserChat}
       onPress={() => {
         navigation.navigate('Messages', {
-          recepientIds: item.members,
-          groupId: item._id,
           item: item,
         });
       }}

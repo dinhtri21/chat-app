@@ -36,9 +36,9 @@ var height = Dimensions.get('window').height; //full height
 
 const ChatScreen = () => {
   const route = useRoute();
-  const { recepientIds, groupId, item } = route.params;
+  const { item } = route.params;
   const navigation = useNavigation();
-  const [recepientData, setRecepientData] = useState({});
+  const [groupData, setGroupData] = useState({});
   const { userData, setuserData } = useContext(UserType);
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
@@ -47,79 +47,50 @@ const ChatScreen = () => {
   const [selectedImages, setSelectedImages] = useState([]);
   const [isOpen, setIsOpen] = useState(false); // State để hiển thị emoji picker
   const [offset, setOffset] = useState(0);
-  const limit = 16; // Số lượng tin nhắn muốn load mỗi lần
+  const limit = 14;
   const [isEndMessage, setIsEndMessage] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    navigation.setOptions({
-      headerTitle: '',
-      headerLeft: () => (
-        <View style={styles.headerContainer}>
-          <Ionicons
-            onPress={() => navigation.goBack()}
-            name="arrow-back"
-            size={24}
-            color="black"
-          />
-          <View style={styles.headerInfo}>
-            {recepientData?.image ? (
-              <Image
-                style={styles.headerInfoImage}
-                source={{ uri: recepientData?.image }}
-              />
-            ) : (
-              <Image
-                style={styles.headerInfoImage}
-                source={require('../assets/default-profile-picture-avatar.jpg')}
-              />
-            )}
-            <Text style={styles.headerNavTitle}>{item?.group}</Text>
-          </View>
-        </View>
-      ),
-    });
-  }, [recepientData]);
-
   // BEGIN: NHẮN TIN //
-  const fetchRecepientData = async () => {
+  const fetchGroupData = async () => {
     try {
       const res = await axios.get(
-        `${process.env.EXPRESS_API_URL}/user/user/${recepientIds[0]}`,
+        `${process.env.EXPRESS_API_URL}/group/getDataUsersInGroup/${item._id}`,
         {
           cancelToken: cancelTokenSource.token,
         }
       );
       if (res.status == 200) {
-        const data = res.data.user;
-        setRecepientData(data);
-        console.log(data);
+        setGroupData(res.data);
       }
     } catch (error) {
-      console.log('Lỗi hàm fetchRecepientData: ', error);
+      console.log('Lỗi hàm fetchgroupData: ', error);
     }
   };
-  const fetchMessages = async () => {
-    try {
-      const response = await axios.get(
-        `${process.env.EXPRESS_API_URL}/messages/getMessages/${userData._id}/${groupId}`,
-        {
-          cancelToken: cancelTokenSource.token,
-          params: { offset, limit },
+  //Thông tin nhóm
+  const fetchMessages = async (offset, limit) => {
+    if (groupData._id) {
+      try {
+        const response = await axios.get(
+          `${process.env.EXPRESS_API_URL}/messages/getMessages/${groupData._id}`,
+          {
+            cancelToken: cancelTokenSource.token,
+            params: { offset: offset, limit: limit },
+          }
+        );
+        if (response.status === 200) {
+          return response.data.messages;
         }
-      );
-      if (response.status === 200) {
-        return response.data.messages;
+      } catch (error) {
+        console.log('Lỗi hàm fetchMessages:', error);
       }
-    } catch (error) {
-      console.log('Lỗi hàm fetchMessages:', error);
     }
   };
 
   const loadInitialMessages = async () => {
-    const newMessages = await fetchMessages();
-    if (newMessages) {
-      await setMessages(newMessages);
+    const newMessages = await fetchMessages(0, limit);
+    if (newMessages && messages.length == 0) {
+      await setMessages([...messages, ...newMessages]);
       await setOffset(offset + newMessages.length);
     }
   };
@@ -153,7 +124,7 @@ const ChatScreen = () => {
   };
 
   const sendImageMessage = async (imageData) => {
-    const newGroupId = await recepientIds
+    const newGroupId = await item.members
       .filter((rep) => rep._id !== userData._id)
       .map((rep) => rep._id);
     try {
@@ -161,7 +132,7 @@ const ChatScreen = () => {
         encoding: FileSystem.EncodingType.Base64,
       });
       socket.emit('sendMessage', {
-        groupId: groupId,
+        groupId: item._id,
         senderId: userData._id,
         recepientId: newGroupId,
         messageType: 'image',
@@ -177,13 +148,13 @@ const ChatScreen = () => {
   };
 
   const sendTextMessage = async () => {
-    const newGroupId = await recepientIds
+    const newGroupId = await await item.members
       .filter((rep) => rep._id !== userData._id)
       .map((rep) => rep._id);
     try {
       if (inputMessage.trim() !== '') {
         socket.emit('sendMessage', {
-          groupId: groupId,
+          groupId: item._id,
           senderId: userData._id,
           recepientId: newGroupId,
           messageType: 'text',
@@ -305,9 +276,11 @@ const ChatScreen = () => {
     setSelectedImages(updatedImages);
   };
   // END: XỬ LÍ CHỌN ẢNH //
+
+  //Render lần đầu
   useEffect(() => {
-    fetchRecepientData();
-    loadInitialMessages();
+    console.log(2);
+    fetchGroupData();
     setTimeout(() => {
       scrollToBottom();
     }, 1000);
@@ -315,10 +288,16 @@ const ChatScreen = () => {
       cancelTokenSource.cancel();
     };
   }, []);
-
+  useEffect(() => {
+    console.log(1);
+    loadInitialMessages();
+    return () => {
+      cancelTokenSource.cancel();
+    };
+  }, [groupData]);
+  //Socket
   useEffect(() => {
     socket.on('newMessage', (data) => {
-      console.log(data);
       setMessages((prevMessages) => [...prevMessages, data.message]);
       scrollToBottom();
     });
@@ -326,6 +305,37 @@ const ChatScreen = () => {
       socket.off('newMessage');
     };
   }, []);
+
+  useEffect(() => {
+    navigation.setOptions({
+      headerTitle: '',
+      headerLeft: () => (
+        <View style={styles.headerContainer}>
+          <Ionicons
+            onPress={() => navigation.goBack()}
+            name="arrow-back"
+            size={24}
+            color="black"
+          />
+          <View style={styles.headerInfo}>
+            <Image
+              style={styles.headerInfoImage}
+              source={
+                groupData?.members?.length > 2
+                  ? require('../assets/groupIcon.png')
+                  : { uri: groupData?.members?.[1]?.image }
+              }
+            />
+            <Text style={styles.headerNavTitle}>
+              {groupData?.members?.length > 2
+                ? groupData.name
+                : groupData?.members?.[0]?.name || ''}
+            </Text>
+          </View>
+        </View>
+      ),
+    });
+  }, [groupData]);
 
   return (
     <View style={styles.container}>
@@ -399,6 +409,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   headerInfoImage: {
+    backgroundColor: 'rgba(0,0,0,0.04)',
     width: 35,
     height: 35,
     borderRadius: 35,
