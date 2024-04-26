@@ -12,13 +12,13 @@ export default function App() {
   console.log(process.env.EXPRESS_API_URL);
   //npx expo start -c
   return (
-    <GestureHandlerRootView style={styles.modal}>
-      <BottomSheetModalProvider>
-        <UserContext>
+    <UserContext>
+      <GestureHandlerRootView style={styles.modal}>
+        <BottomSheetModalProvider>
           <StackNavigator />
-        </UserContext>
-      </BottomSheetModalProvider>
-    </GestureHandlerRootView>
+        </BottomSheetModalProvider>
+      </GestureHandlerRootView>
+    </UserContext>
   );
 }
 

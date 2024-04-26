@@ -12,9 +12,11 @@ import { useContext } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { UserType } from '../UserContext';
 import axios, { CancelToken } from 'axios';
-import User from '../components/User';
 import { socket } from '../socket';
-
+import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
+import TabUsers from '../components/TabUsers';
+import TabFriends from '../components/TabFriends';
+import TabFriendRequests from '../components/TabFriendRequests';
 
 const HomeScreen = () => {
   const cancelTokenSource = CancelToken.source();
@@ -24,6 +26,8 @@ const HomeScreen = () => {
   const [requestSent, setRequestSent] = useState([]);
   const [friendRequests, setFriendRequests] = useState([]);
   const [listFriends, setListFriends] = useState([]);
+
+  const Tab = createMaterialTopTabNavigator();
 
   useEffect(() => {
     navigation.setOptions({
@@ -51,8 +55,6 @@ const HomeScreen = () => {
       if (res.status == 200) {
         const data = res.data;
         setUsers(data);
-      } else {
-        console.log(res);
       }
     } catch (err) {
       console.log('Lỗi fetchUsers' + err);
@@ -149,6 +151,7 @@ const HomeScreen = () => {
         getListFriendRequests();
       }
     });
+
     return () => {
       socket.off('newMessage');
       socket.off('addFriendStatus');
@@ -158,25 +161,32 @@ const HomeScreen = () => {
   }, []);
 
   return (
-    <ScrollView
-      style={styles.friendContainer}
-      contentContainerStyle={styles.contentFriendContainer}
-    >
-      {users &&
-        users.map((item, index) => {
-          return (
-            <User
-              item={item}
-              key={index}
-              users={users}
-              requestSent={requestSent}
-              friendRequests={friendRequests}
-              listFriends={listFriends}
-              userDataId={userData._id}
-            />
-          );
-        })}
-    </ScrollView>
+    <>
+      <Tab.Navigator>
+        <Tab.Screen name="Bạn bè" component={TabFriends} />
+        <Tab.Screen name="Lời kết bạn" component={TabFriendRequests} />
+        <Tab.Screen name="Người dùng khác" component={TabUsers} />
+      </Tab.Navigator>
+      {/* <ScrollView
+        style={styles.friendContainer}
+        contentContainerStyle={styles.contentFriendContainer}
+      >
+        {users &&
+          users.map((item, index) => {
+            return (
+              <User
+                item={item}
+                key={index}
+                users={users}
+                requestSent={requestSent}
+                friendRequests={friendRequests}
+                listFriends={listFriends}
+                userDataId={userData._id}
+              />
+            );
+          })}
+      </ScrollView> */}
+    </>
   );
 };
 
@@ -190,6 +200,5 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 2,
   },
-  contentFriendContainer: {
-  },
+  contentFriendContainer: {},
 });

@@ -6,15 +6,7 @@ import { useContext } from 'react';
 import { UserType } from '../UserContext';
 
 const MultiMemberGroup = ({ item }) => {
-  // const { userData, setuserData } = useContext(UserType);
   const navigation = useNavigation();
-  // let formattedTime = null;
-  // Định dạng thời gian theo múi giờ Việt Nam
-  // if (item.latestMessage) {
-  //   formattedTime = moment(item?.latestMessage?.timeStamp)
-  //     .utcOffset('+0700')
-  //     .format('HH:mm'); // Định dạng chỉ giờ: phút
-  // }
 
   return (
     <Pressable
@@ -27,9 +19,8 @@ const MultiMemberGroup = ({ item }) => {
     >
       <View style={styles.containerInfo}>
         <Image
-          defaultSource={require('../assets/default-profile-picture-avatar.jpg')}
           style={styles.infoImg}
-          source={require('../assets/default-profile-picture-avatar.jpg')}
+          source={require('../assets/groupIcon.png')}
         />
         <View style={styles.infoNameMessLast}>
           <Text style={styles.infoName}>{item.group}</Text>
@@ -53,7 +44,7 @@ const styles = StyleSheet.create({
     borderLeftWidth: 0,
     borderRightWidth: 0,
     paddingHorizontal: 14,
-    paddingVertical: 5,
+    paddingVertical: 10,
   },
   containerInfo: {
     flexDirection: 'row',

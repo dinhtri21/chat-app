@@ -8,45 +8,49 @@ import {
 } from 'react-native';
 import React, { useState } from 'react';
 import { AntDesign } from '@expo/vector-icons';
+import { useContext } from 'react';
+import { UserType } from '../UserContext';
 
-const UserChatGroupModal = ({ friend, handleFriendSelect, isSelected }) => {
-  return (
-    <TouchableOpacity
-      onPress={() => handleFriendSelect(friend)}
-      activeOpacity={1}
-    >
-      <View style={styles.friendContainer}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-          <Image
-            style={{
-              height: 45,
-              width: 45,
-              borderRadius: 40,
-              backgroundColor: '#ccc',
-            }}
-            source={
-              friend &&
-              friend.image &&
-              `${process.env.EXPRESS_API_URL}`.indexOf(friend.image)
-                ? { uri: friend.image }
-                : require('../assets/default-profile-picture-avatar.jpg')
-            }
-          />
+const UserChatGroupModal = ({ friends, handleFriendSelect, isSelected }) => {
+  const { userData, setuserData } = useContext(UserType);
+  return friends.members.map((friend, index) => {
+    return userData._id != friend._id ? (
+      <TouchableOpacity
+        onPress={() => handleFriendSelect(friends)}
+        activeOpacity={1}
+        key={index}
+      >
+        <View style={styles.friendContainer}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <Image
+              style={{
+                height: 45,
+                width: 45,
+                borderRadius: 40,
+                backgroundColor: '#ccc',
+              }}
+              source={
+                friend && `${process.env.EXPRESS_API_URL}`.indexOf(friend.image)
+                  ? require('../assets/default-profile-picture-avatar.jpg')
+                  : { uri: friend?.image }
+              }
+            />
+            <View>
+              <Text style={{ color: '#000', fontSize: 16 }}>{friend.name}</Text>
+              <Text style={{ color: '#ccc' }}> {friend?.email}</Text>
+            </View>
+          </View>
           <View>
-            <Text style={{ color: '#000', fontSize: 16 }}>{friend?.name}</Text>
-            <Text style={{ color: '#ccc' }}>{friend?.email}</Text>
+            {isSelected ? (
+              <AntDesign name="checkcircle" size={24} color="#0057ffa8" />
+            ) : (
+              <View style={styles.radioBtn}></View>
+            )}
           </View>
         </View>
-        <View>
-          {isSelected ? (
-            <AntDesign name="checkcircle" size={24} color="#0057ffa8" />
-          ) : (
-            <View style={styles.radioBtn}></View>
-          )}
-        </View>
-      </View>
-    </TouchableOpacity>
-  );
+      </TouchableOpacity>
+    ) : null;
+  });
 };
 
 export default UserChatGroupModal;

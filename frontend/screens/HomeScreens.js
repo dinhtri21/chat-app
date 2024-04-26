@@ -129,6 +129,16 @@ const HomeScreeens = () => {
 
   useEffect(() => {
     getAllGroup();
+    socket.on('groupCreated', (data) => {
+      data?.members.forEach((userId) => {
+        if (userData._id == userId) {
+          // console.log(1);
+          socket.emit('joinGroup', {
+            groupId: data._id,
+          });
+        }
+      });
+    });
     return () => {
       cancelTokenSource.cancel();
     };

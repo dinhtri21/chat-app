@@ -10,8 +10,11 @@ import axios, { CancelToken } from 'axios';
 import UserChatGroupModal from './UserChatGroupModal';
 import { FlatList, ScrollView, TextInput } from 'react-native-gesture-handler';
 import { socket } from '../socket';
+import { UserType } from '../UserContext';
+import { useContext } from 'react';
 
-const ModalGroupChat = ({ userData, onModal, setOnMadal }) => {
+const CreateGroupChatModal = ({ onModal, setOnMadal }) => {
+  const { userData, setuserData } = useContext(UserType);
   const cancelTokenSource = CancelToken.source();
   const [listFriends, setListFriends] = useState([]);
   const [selectedFriends, setSelectedFriends] = useState([]);
@@ -66,7 +69,7 @@ const ModalGroupChat = ({ userData, onModal, setOnMadal }) => {
   };
 
   useEffect(() => {
-    getListFriend();  
+    getListFriend();
     return () => {
       cancelTokenSource.cancel();
     };
@@ -82,12 +85,17 @@ const ModalGroupChat = ({ userData, onModal, setOnMadal }) => {
         borderRadius: 20,
       }}
     >
-      <Text style={{ fontSize: 16 }}>{item.name}</Text>
+      <Text style={{ fontSize: 16 }}>{item?.members[1]?.name}</Text>
     </View>
   );
   // Tạo nhóm
   const createJoinMultiMemberGroup = async () => {
-    const groupId = selectedFriends.map((user) => user._id);
+    const groupId = selectedFriends
+      .map((friend) =>
+        friend.members.filter((member) => member._id !== userData._id)
+      )
+      .flat()
+      .map((member) => member._id);
     await groupId.push(userData._id);
     socket.emit('joinMultiMemberGroup', {
       groupName: groupName,
@@ -107,9 +115,10 @@ const ModalGroupChat = ({ userData, onModal, setOnMadal }) => {
     });
 
     return () => {
-      socket.off("joinMultiMemberGroup");
+      socket.off('joinMultiMemberGroup');
     };
   }, []);
+
   return (
     <BottomSheetModal
       ref={bottomSheetRef}
@@ -167,7 +176,7 @@ const ModalGroupChat = ({ userData, onModal, setOnMadal }) => {
               return (
                 <UserChatGroupModal
                   key={index}
-                  friend={friend}
+                  friends={friend}
                   handleFriendSelect={handleFriendSelect}
                   isSelected={selectedFriends.some(
                     (item) => item._id == friend._id
@@ -188,7 +197,7 @@ const ModalGroupChat = ({ userData, onModal, setOnMadal }) => {
     </BottomSheetModal>
   );
 };
-export default ModalGroupChat;
+export default CreateGroupChatModal;
 
 const styles = StyleSheet.create({
   container: {

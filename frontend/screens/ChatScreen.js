@@ -3,7 +3,6 @@ import {
   Text,
   View,
   Image,
-  TouchableOpacity,
   TextInput,
   KeyboardAvoidingView,
   ScrollView,
@@ -23,16 +22,12 @@ import React, {
 import { useNavigation, useRoute } from '@react-navigation/native';
 import axios, { CancelToken } from 'axios';
 import { Ionicons } from '@expo/vector-icons';
-import { Entypo } from '@expo/vector-icons';
 import { UserType } from '../UserContext';
 import { socket } from '../socket';
 import { AntDesign } from '@expo/vector-icons';
 import { EvilIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
-import { Dimensions } from 'react-native';
-var width = Dimensions.get('window').width; //full width
-var height = Dimensions.get('window').height; //full height
 
 const ChatScreen = () => {
   const route = useRoute();
@@ -52,10 +47,11 @@ const ChatScreen = () => {
   const [refreshing, setRefreshing] = useState(false);
 
   // BEGIN: NHẮN TIN //
-  const fetchGroupData = async () => {
+  const fetchGroupData = async ({ groupId }) => {
     try {
+      const groupIds = item.members ? item._id : groupId;
       const res = await axios.get(
-        `${process.env.EXPRESS_API_URL}/group/getDataUsersInGroup/${item._id}`,
+        `${process.env.EXPRESS_API_URL}/group/getDataUsersInGroup/${groupIds}`,
         {
           cancelToken: cancelTokenSource.token,
         }
@@ -124,7 +120,7 @@ const ChatScreen = () => {
   };
 
   const sendImageMessage = async (imageData) => {
-    const newGroupId = await item.members
+    const newGroupId = await groupData.members
       .filter((rep) => rep._id !== userData._id)
       .map((rep) => rep._id);
     try {
@@ -132,7 +128,7 @@ const ChatScreen = () => {
         encoding: FileSystem.EncodingType.Base64,
       });
       socket.emit('sendMessage', {
-        groupId: item._id,
+        groupId: groupData._id,
         senderId: userData._id,
         recepientId: newGroupId,
         messageType: 'image',
@@ -148,13 +144,13 @@ const ChatScreen = () => {
   };
 
   const sendTextMessage = async () => {
-    const newGroupId = await await item.members
+    const newGroupId = await groupData.members
       .filter((rep) => rep._id !== userData._id)
       .map((rep) => rep._id);
     try {
       if (inputMessage.trim() !== '') {
         socket.emit('sendMessage', {
-          groupId: item._id,
+          groupId: groupData._id,
           senderId: userData._id,
           recepientId: newGroupId,
           messageType: 'text',
@@ -188,15 +184,20 @@ const ChatScreen = () => {
           />
         ) : null}
         {message.messageType == 'text' ? (
-          <Text
-            style={{
-              color: isUserMessage ? '#fff' : '#000',
-              backgroundColor: isUserMessage ? '#4a86f7' : '#fff',
-              ...styles.messageText,
-            }}
-          >
-            {message.message}
-          </Text>
+          <View style={styles.nameAndMessageView}>
+            {/* {!isUserMessage ? (
+              <Text style={styles.nameSender}>{message.senderId.name}</Text>
+            ) : null} */}
+            <Text
+              style={{
+                color: isUserMessage ? '#fff' : '#000',
+                backgroundColor: isUserMessage ? '#4a86f7' : '#fff',
+                ...styles.messageText,
+              }}
+            >
+              {message.message}
+            </Text>
+          </View>
         ) : message.messageType == 'image' ? (
           <View style={styles.imageMessage}>
             <Image
@@ -279,25 +280,40 @@ const ChatScreen = () => {
 
   //Render lần đầu
   useEffect(() => {
-    console.log(2);
-    fetchGroupData();
+    item && item.members
+      ? fetchGroupData({ groupId: item._id })
+      : socket.emit('createGroup', {
+          groupName: '',
+          members: [userData._id, item._id],
+        });
+    socket.on('groupCreatedSuccess', (data) => {
+      fetchGroupData({ groupId: data._id });
+    });
     setTimeout(() => {
       scrollToBottom();
     }, 1000);
     return () => {
       cancelTokenSource.cancel();
+      socket.off('createGroup');
+      socket.off('groupCreatedSuccess');
     };
   }, []);
+  //Render tin nhắn đầu tiên
   useEffect(() => {
-    console.log(1);
-    loadInitialMessages();
+    if (item.members) {
+      loadInitialMessages();
+    }
+    // console.log(groupData);
     return () => {
       cancelTokenSource.cancel();
     };
   }, [groupData]);
-  //Socket
+  //Socket tin nhắn mới
   useEffect(() => {
     socket.on('newMessage', (data) => {
+      if (data.groupId) {
+        setGroupData({ ...groupData, _id: data.groupId });
+      }
       setMessages((prevMessages) => [...prevMessages, data.message]);
       scrollToBottom();
     });
@@ -323,13 +339,24 @@ const ChatScreen = () => {
               source={
                 groupData?.members?.length > 2
                   ? require('../assets/groupIcon.png')
-                  : { uri: groupData?.members?.[1]?.image }
+                  : !item?.members
+                  ? { uri: item?.image }
+                  : {
+                      uri:
+                        userData._id == groupData?.members?.[0]._id
+                          ? groupData?.members?.[1]?.image
+                          : groupData?.members?.[0]?.image,
+                    }
               }
             />
             <Text style={styles.headerNavTitle}>
               {groupData?.members?.length > 2
                 ? groupData.name
-                : groupData?.members?.[0]?.name || ''}
+                : !item?.members
+                ? item?.name
+                : userData._id == groupData?.members?.[0]._id
+                ? groupData?.members?.[1]?.name
+                : groupData?.members?.[0]?.name}
             </Text>
           </View>
         </View>
@@ -351,8 +378,6 @@ const ChatScreen = () => {
             progressBackgroundColor="#fff"
           />
         }
-        // onScroll={handleScroll}
-        // scrollEnabled = {isScrollEnabled}
       >
         {messages?.length > 0 ? messages.map(renderMessageBubble) : null}
       </ScrollView>
@@ -380,8 +405,6 @@ const ChatScreen = () => {
             size={24}
             color="black"
           />
-          {/* <Entypo name="emoji-happy" size={24} color="black" /> */}
-
           <TextInput
             placeholder="Nhập tin nhắn..."
             value={inputMessage}
@@ -424,7 +447,6 @@ const styles = StyleSheet.create({
   },
   messagesContainer: {
     flex: 1,
-    // backgroundColor: "#666",
   },
   contentContainer: {
     flexGrow: 1, // Kích thước nội dung tăng dần để cho phép cuộn
@@ -434,12 +456,23 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginHorizontal: 12,
+    marginVertical: 10,
+    // backgroundColor: '#ccc',
   },
-
+  // nameAndMessageView: {
+  //   position: 'relative',
+  // },
+  // nameSender: {
+  //   position: 'absolute',
+  //   top: -40,
+  //   marginBottom: 4,
+  //   fontSize: 14,
+  // },
   imageAvt: {
     height: 28,
     width: 28,
     borderRadius: 28,
+    marginVertical: 4,
   },
 
   imageMessage: {
@@ -455,9 +488,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   messageText: {
+    // display: 'inline',
     paddingHorizontal: 10,
     paddingVertical: 8,
-    marginVertical: 10,
     borderRadius: 16,
     marginLeft: 10,
   },

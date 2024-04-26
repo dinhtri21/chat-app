@@ -3,10 +3,11 @@ import React, { useEffect, useState, useContext } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { AntDesign } from '@expo/vector-icons';
 import { Dimensions } from 'react-native';
-import ModalGroupChat from '../components/GroupChatModal';
+import GroupChatModal from '../components/CreateGroupChatModal';
 import { UserType } from '../UserContext';
 import axios, { CancelToken } from 'axios';
 import MultiMemberGroup from '../components/MultiMemberGroup';
+import { socket } from '../socket';
 
 var fullwidth = Dimensions.get('window').width; //full width
 var fullheight = Dimensions.get('window').height; //full height
@@ -67,18 +68,20 @@ const ChatGroupSreen = () => {
 
   useEffect(() => {
     getMultiMemberGroup();
+    socket.on('joinMultiMemberGroup', (data) => {
+      if (data.status == 'success') {
+        getMultiMemberGroup();
+      }
+    });
     return () => {
       cancelTokenSource.cancel();
+      socket.off('joinMultiMemberGroup');
     };
   }, []);
 
   return (
     <View style={{ flex: 1, position: 'relative' }}>
-      <ModalGroupChat
-        onModal={onModal}
-        setOnMadal={setOnMadal}
-        userData={userData}
-      />
+      <GroupChatModal onModal={onModal} setOnMadal={setOnMadal} />
       {multiMemberGroup &&
         multiMemberGroup.map((group, index) => {
           return <MultiMemberGroup item={group} key={index} />;

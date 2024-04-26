@@ -32,12 +32,21 @@ const UserChat = ({ item }) => {
           source={
             item?.members.length > 2
               ? require('../assets/groupIcon.png')
-              : { uri: item?.members[1].image }
+              : {
+                  uri:
+                    userData._id == item?.members?.[0]._id
+                      ? item?.members?.[1]?.image
+                      : item?.members?.[0]?.image,
+                }
           }
         />
         <View style={styles.infoNameMessLast}>
           <Text style={styles.infoName}>
-            {item?.members.length > 2 ? item.group : item.members[1].name}
+            {item?.members.length > 2
+              ? item.group
+              : userData._id == item?.members?.[0]._id
+              ? item?.members?.[1]?.name
+              : item?.members?.[0]?.name}
           </Text>
           {item?.latestMessage?.messageType == 'text' ? (
             <Text
