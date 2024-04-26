@@ -3,10 +3,27 @@ const Group = require("../models/group");
 exports.joinGroup = async (data, socket, io) => {
   try {
     socket.join(data.groupId);
+    console.log(data.groupId);
   } catch (error) {
     console.log("Lỗi hàm joinGroup socket io: " + error);
   }
 };
+
+exports.createGroup = async (data, socket, io) => {
+  try {
+    const newGroup = await new Group({
+      name: data.groupName,
+      members: data.members,
+    });
+    console.log(newGroup);
+    await newGroup.save();
+    io.emit("groupCreated", newGroup);
+    socket.emit("groupCreatedSuccess", newGroup);
+  } catch (error) {
+    console.log("Lỗi hàm createGroup" + error);
+  }
+};
+
 exports.addFriend = async (data, socket, io) => {
   try {
     // Tìm thông tin user gửi yêu cầu kết bạn
@@ -166,7 +183,7 @@ exports.joinMultiMemberGroup = async (data, socket, io) => {
     //   status: "error",
     //   message: "Đã xảy ra lỗi khi tạo nhóm",
     // });
-    socket.broadcast.emit('multiMemberGroupCreated',  {
+    socket.broadcast.emit("multiMemberGroupCreated", {
       status: "success",
       message: `Nhóm mới đã được tạo`,
       newGroup: newGroup.members,

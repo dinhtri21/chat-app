@@ -14,7 +14,7 @@ const server = http.createServer(app);
 const { Server } = require("socket.io");
 const io = new Server(server);
 
-const { addFriend, acceptFriend, joinGroup, joinMultiMemberGroup } = require("./sockets/friendSocket");
+const { addFriend, acceptFriend, joinGroup, joinMultiMemberGroup, createGroup } = require("./sockets/friendSocket");
 const { login } = require("./sockets/userSocket");
 const { sendMessage } = require("./sockets/messageSocket");
 // addFriend(io);
@@ -35,6 +35,9 @@ io.on("connection", (socket) => {
   });
   socket.on("joinGroup", (data) => {
     joinGroup(data, socket, io);
+  });
+  socket.on("createGroup", (data) => {
+    createGroup(data, socket, io);
   });
   socket.on("joinMultiMemberGroup", (data) => {
     joinMultiMemberGroup(data, socket, io);

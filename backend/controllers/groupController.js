@@ -3,7 +3,6 @@ const Group = require("../models/group");
 exports.getAllGroup = async (req, res) => {
   try {
     const userId = req.params.userId;
-
     const user = await User.findById(userId).populate("groups");
 
     const groupMembersPromises = user.groups.map(async (group) => {
@@ -43,7 +42,6 @@ exports.getAllGroup = async (req, res) => {
 exports.getMultiMemberGroup = async (req, res) => {
   try {
     const userId = req.params.userId;
-
     const user = await User.findById(userId).populate("groups");
 
     // Lọc nhóm có ít nhất 2 thành viên
@@ -61,6 +59,7 @@ exports.getMultiMemberGroup = async (req, res) => {
           .select("name members")
           .lean();
         return {
+          _id: groupWithMembers._id,
           group: groupWithMembers.name,
           members: groupWithMembers.members,
         };
@@ -98,6 +97,10 @@ exports.getDataUsersInGroup = async (req, res) => {
         select: "name email image",
       })
       .lean();
+
+    dataUser.members.forEach((member) => {
+      member.image = `${process.env.IMG_URL}/avatar/${member.image}`;
+    });
 
     res.status(200).json(dataUser);
   } catch (error) {

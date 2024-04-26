@@ -77,20 +77,56 @@ exports.getAllUsers = async (req, res) => {
   try {
     const userId = req.params.userId;
 
-    const usersData = await User.find({ _id: { $ne: userId } }).lean();
+    const user = await User.findById(userId)
+      .populate({
+        path: "groups",
+        populate: { path: "members", select: "name email image" },
+      })
+      .lean();
 
-    if (!usersData) {
-      res.status(500).json({ message: "Lỗi truy xuất người dùng" });
+    if (!user) {
+      return res.status(404).json({ message: "Người dùng không tồn tại" });
     }
 
-    const Users = await usersData.map((item) => {
-      if (item.image) {
-        return { ...item, image: `${process.env.IMG_URL}/avatar/${item.image}` };
-      }
-      return item;
-    });
+    const userGroups = await user.groups;
 
-    res.status(200).json(Users);
+    // Danh sách các id bị loại
+    const excludedUserIds = [
+      ...user.friends,
+      ...user.friendRequests,
+      ...user.sentFriendRequests,
+      userId,
+    ];
+
+    const usersData = await User.find({
+      _id: { $nin: excludedUserIds },
+    })
+      .lean()
+      .select("name email image");
+
+    const result = usersData.map((userData) => {
+      const isInGroup = userGroups.filter((group) =>
+        group.members.some((member) => {
+          return userData._id.equals(member._id) && group.members.length <= 2;
+        })
+      );
+
+      if (isInGroup.length > 0) {
+        isInGroup[0].members.forEach((member) => {
+          member.image = `${process.env.IMG_URL}/avatar/${member.image}`;
+        });
+        return isInGroup[0];
+      } else {
+        const userDataWithImage = {
+          ...userData,
+          image: userData.image
+            ? `${process.env.IMG_URL}/avatar/${userData.image}`
+            : null,
+        };
+        return userDataWithImage;
+      }
+    });
+    res.status(200).json(result);
   } catch (err) {
     console.log("Lỗi hàm getAllUsers: " + err);
     res.status(500).json({ message: "Lỗi truy xuất người dùng" });

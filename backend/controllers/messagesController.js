@@ -2,7 +2,7 @@ const message = require("../models/message");
 
 exports.getMessages = async (req, res) => {
   try {
-    const { userId, groupId } = req.params;
+    const { groupId } = req.params;
     const { offset, limit } = req.query;
 
     const messages = await message
