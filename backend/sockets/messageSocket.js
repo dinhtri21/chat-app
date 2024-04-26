@@ -57,7 +57,6 @@ exports.sendMessage = async (data, socket, io) => {
     // Thêm url ảnh avt
     newMessageJSON.senderId.image = `${process.env.IMG_URL}/avatar/${newMessageJSON.senderId.image}`;
 
-    console.log(newMessageJSON);
     const commonGroup = await Group.findOne({
       _id: data.groupId,
     });

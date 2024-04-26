@@ -8,14 +8,27 @@ exports.joinGroup = async (data, socket, io) => {
     console.log("Lỗi hàm joinGroup socket io: " + error);
   }
 };
-
 exports.createGroup = async (data, socket, io) => {
   try {
+    let groupName = data.groupName;
+
+    if (!groupName) {
+      groupName = data.members.join("_");
+    }
+
     const newGroup = await new Group({
-      name: data.groupName,
+      name: groupName,
       members: data.members,
     });
     console.log(newGroup);
+
+    // Lưu ID của nhóm vào từng thành viên
+    for (const memberId of data.members) {
+      await User.findByIdAndUpdate(memberId, {
+        $push: { groups: newGroup._id },
+      });
+    }
+
     await newGroup.save();
     io.emit("groupCreated", newGroup);
     socket.emit("groupCreatedSuccess", newGroup);
@@ -23,7 +36,6 @@ exports.createGroup = async (data, socket, io) => {
     console.log("Lỗi hàm createGroup" + error);
   }
 };
-
 exports.addFriend = async (data, socket, io) => {
   try {
     // Tìm thông tin user gửi yêu cầu kết bạn
@@ -72,23 +84,27 @@ exports.addFriend = async (data, socket, io) => {
       await receiver.save();
 
       socket.join(newGroup._id.toString());
-      io.to(newGroup._id.toString()).emit("addFriendStatus", {
-        success: true,
-        groupId: newGroup._id.toString(),
-        senderId: sender._id,
-        receiverId: receiver._id,
-      });
+      //Gửi cho socket
+      // io.to(newGroup._id.toString()).emit("addFriendStatus", {
+      //   success: true,
+      //   groupId: newGroup._id.toString(),
+      //   senderId: sender._id,
+      //   receiverId: receiver._id,
+      // });
+      //Gửi tất cả
       io.emit("addFriendStatus", {
-        sender: sender._id,
+        newGroup: true,
+        senderId: sender._id,
         success: true,
         groupId: newGroup._id.toString(),
-        senderId: sender._id,
         receiverId: receiver._id,
       });
     } else {
-      socket.join(commonGroup._id.toString());
       io.to(commonGroup._id.toString()).emit("addFriendStatus", {
         success: true,
+        groupId: commonGroup._id.toString(),
+        senderId: sender._id,
+        receiverId: receiver._id,
       });
     }
   } catch (error) {
@@ -100,6 +116,7 @@ exports.addFriend = async (data, socket, io) => {
 };
 exports.acceptFriend = async (data, socket, io) => {
   try {
+    console.log(data);
     // Tìm thông tin user chấp nhận kết bạn
     const acceptor = await User.findById(data.acceptorId);
     if (!acceptor) {
@@ -158,7 +175,6 @@ exports.acceptFriend = async (data, socket, io) => {
     console.error("Lỗi hàm acceptFriend socket io: " + error);
   }
 };
-
 exports.joinMultiMemberGroup = async (data, socket, io) => {
   try {
     const listUserId = data.listUserId;
